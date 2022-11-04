@@ -75,6 +75,9 @@ class CachedDispatchNode(_AbstractDispatchNode):
         _AbstractDispatchNode.__init__(self, rcvr_class, next_entry)
         self._cached_method = method
 
+    def get_cached_method(self):
+        return self._cached_method
+
     def dispatch_1(self, rcvr):
         return self._cached_method.invoke_1(rcvr)
 
