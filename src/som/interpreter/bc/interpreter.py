@@ -6,6 +6,7 @@ from som.interpreter.ast.frame import (
     FRAME_AND_INNER_RCVR_IDX,
     get_inner_as_context,
 )
+from som.interpreter.ast.nodes.dispatch import CachedDispatchNode
 from som.interpreter.bc.bytecodes import bytecode_length, Bytecodes, bytecode_as_str
 from som.interpreter.bc.frame import (
     get_block_at,
@@ -32,8 +33,9 @@ def _do_super_send(bytecode_index, method, stack, stack_ptr):
     receiver = stack[stack_ptr - (num_args - 1)]
 
     if invokable:
+        first = method.get_inline_cache(bytecode_index)
         method.set_inline_cache(
-            bytecode_index, receiver_class.get_layout_for_instances(), invokable
+            bytecode_index, CachedDispatchNode(receiver_class.get_layout_for_instances(), invokable, first)
         )
         if num_args == 1:
             bc = Bytecodes.q_super_send_1
@@ -628,30 +630,30 @@ def interpret(method, frame, max_stack_size):
             )
 
         elif bytecode == Bytecodes.q_super_send_1:
-            invokable = method.get_inline_cache_invokable(current_bc_idx)
-            stack[stack_ptr] = invokable.invoke_1(stack[stack_ptr])
+            invokable = method.get_inline_cache(current_bc_idx)
+            stack[stack_ptr] = invokable.dispatch_1(stack[stack_ptr])
 
         elif bytecode == Bytecodes.q_super_send_2:
-            invokable = method.get_inline_cache_invokable(current_bc_idx)
+            invokable = method.get_inline_cache(current_bc_idx)
             arg = stack[stack_ptr]
             if we_are_jitted():
                 stack[stack_ptr] = None
             stack_ptr -= 1
-            stack[stack_ptr] = invokable.invoke_2(stack[stack_ptr], arg)
+            stack[stack_ptr] = invokable.dispatch_2(stack[stack_ptr], arg)
 
         elif bytecode == Bytecodes.q_super_send_3:
-            invokable = method.get_inline_cache_invokable(current_bc_idx)
+            invokable = method.get_inline_cache(current_bc_idx)
             arg2 = stack[stack_ptr]
             arg1 = stack[stack_ptr - 1]
             if we_are_jitted():
                 stack[stack_ptr] = None
                 stack[stack_ptr - 1] = None
             stack_ptr -= 2
-            stack[stack_ptr] = invokable.invoke_3(stack[stack_ptr], arg1, arg2)
+            stack[stack_ptr] = invokable.dispatch_3(stack[stack_ptr], arg1, arg2)
 
         elif bytecode == Bytecodes.q_super_send_n:
-            invokable = method.get_inline_cache_invokable(current_bc_idx)
-            stack_ptr = invokable.invoke_n(stack, stack_ptr)
+            invokable = method.get_inline_cache(current_bc_idx)
+            stack_ptr = invokable.dispatch_n(stack, stack_ptr)
 
         elif bytecode == Bytecodes.push_local:
             method.patch_variable_access(current_bc_idx)
@@ -702,38 +704,32 @@ def get_self(frame, ctx_level):
 
 @elidable_promote("all")
 def _lookup(layout, selector, method, bytecode_index):
-    # First try of inline cache
-    cached_layout1 = method.get_inline_cache_layout(bytecode_index)
-    if cached_layout1 is layout:
-        invokable = method.get_inline_cache_invokable(bytecode_index)
-    elif cached_layout1 is None:
-        invokable = layout.lookup_invokable(selector)
-        method.set_inline_cache(bytecode_index, layout, invokable)
-    else:
-        # second try
-        # the bytecode index after the send is used by the selector constant,
-        # and can be used safely as another cache item
-        cached_layout2 = method.get_inline_cache_layout(bytecode_index + 1)
-        if cached_layout2 == layout:
-            invokable = method.get_inline_cache_invokable(bytecode_index + 1)
-        else:
-            invokable = layout.lookup_invokable(selector)
-            if cached_layout2 is None:
-                method.set_inline_cache(bytecode_index + 1, layout, invokable)
-    return invokable
+    first = method.get_inline_cache(bytecode_index)
+    cache = first
+
+    while cache is not None:
+        if cache.expected_layout is layout:
+            return cache.get_cached_method()  # TODO should make use of the dispatch methods on the node instead?
+        cache = cache.next_entry
+
+    invoke = layout.lookup_invokable(selector)
+
+    # TODO needs some limit as well, say 8 or similar
+    method.set_inline_cache(bytecode_index, CachedDispatchNode(rcvr_class=layout, method=invoke, next_entry=first))
+    return invoke
 
 
 def _update_object_and_invalidate_old_caches(obj, method, bytecode_index, universe):
     obj.update_layout_to_match_class()
     obj.get_object_layout(universe)
 
-    cached_layout1 = method.get_inline_cache_layout(bytecode_index)
+    cached_layout1 = method.get_inline_cache(bytecode_index)
     if cached_layout1 is not None and not cached_layout1.is_latest:
-        method.set_inline_cache(bytecode_index, None, None)
+        method.set_inline_cache(bytecode_index, None)
 
-    cached_layout2 = method.get_inline_cache_layout(bytecode_index + 1)
+    cached_layout2 = method.get_inline_cache(bytecode_index + 1)
     if cached_layout2 is not None and not cached_layout2.is_latest:
-        method.set_inline_cache(bytecode_index + 1, None, None)
+        method.set_inline_cache(bytecode_index + 1, None)
 
 
 def _send_does_not_understand(receiver, selector, stack, stack_ptr):
