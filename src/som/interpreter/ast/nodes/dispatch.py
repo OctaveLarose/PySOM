@@ -88,7 +88,7 @@ class CachedDispatchNode(_AbstractDispatchNode):
         return self._cached_method.invoke_3(rcvr, arg1, arg2)
 
     def dispatch_args(self, rcvr, args):
-        return self._cached_method.invoke_n(rcvr, args)
+        return self._cached_method.invoke_args(rcvr, args)
 
 
 class CachedDnuNode(_AbstractDispatchNode):
