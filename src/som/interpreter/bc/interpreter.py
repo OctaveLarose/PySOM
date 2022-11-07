@@ -724,11 +724,11 @@ def _update_object_and_invalidate_old_caches(obj, method, bytecode_index, univer
     obj.get_object_layout(universe)
 
     cached_layout1 = method.get_inline_cache(bytecode_index)
-    if cached_layout1 is not None and not cached_layout1.is_latest:
+    if cached_layout1 is not None and not cached_layout1.expected_layout.is_latest:
         method.set_inline_cache(bytecode_index, None)
 
     cached_layout2 = method.get_inline_cache(bytecode_index + 1)
-    if cached_layout2 is not None and not cached_layout2.is_latest:
+    if cached_layout2 is not None and not cached_layout2.expected_layout.is_latest:
         method.set_inline_cache(bytecode_index + 1, None)
 
 
