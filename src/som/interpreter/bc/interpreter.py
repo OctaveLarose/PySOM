@@ -6,7 +6,7 @@ from som.interpreter.ast.frame import (
     FRAME_AND_INNER_RCVR_IDX,
     get_inner_as_context,
 )
-from som.interpreter.ast.nodes.dispatch import CachedDispatchNode
+from som.interpreter.ast.nodes.dispatch import CachedDispatchNode, INLINE_CACHE_SIZE
 from som.interpreter.bc.bytecodes import bytecode_length, Bytecodes, bytecode_as_str
 from som.interpreter.bc.frame import (
     get_block_at,
@@ -704,18 +704,25 @@ def get_self(frame, ctx_level):
 
 @elidable_promote("all")
 def _lookup(layout, selector, method, bytecode_index):
-    first = method.get_inline_cache(bytecode_index)
-    cache = first
+    def get_cache_len(cache_list):
+        cache_entry = cache_list
+        cache_len = 0
+        while cache_entry is not None:
+            cache_len += 1
+            cache_entry = cache_entry.next_entry
+        return cache_len
 
+    cache = first = method.get_inline_cache(bytecode_index)
     while cache is not None:
         if cache.expected_layout is layout:
-            return cache.get_cached_method()  # TODO should make use of the dispatch methods on the node instead?
+            return cache.get_cached_method()  # might be slightly faster to use the node's dispatch methods directly
         cache = cache.next_entry
 
     invoke = layout.lookup_invokable(selector)
 
-    # TODO needs some limit as well, say 8 or similar
-    method.set_inline_cache(bytecode_index, CachedDispatchNode(rcvr_class=layout, method=invoke, next_entry=first))
+    if INLINE_CACHE_SIZE >= get_cache_len(first):
+        method.set_inline_cache(bytecode_index, CachedDispatchNode(rcvr_class=layout, method=invoke, next_entry=first))
+
     return invoke
 
 
