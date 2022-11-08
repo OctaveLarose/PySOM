@@ -718,7 +718,7 @@ def _lookup(layout, selector, method, bytecode_index):
     while cache is not None:
         if not cache.expected_layout.is_latest:  # calculating size, but also discarding old entries
             if prev is None:
-                first = cache.next_entry
+                method.set_inline_cache(bytecode_index, cache.next_entry)
             else:
                 prev.next_entry = cache.next_entry
         else:
