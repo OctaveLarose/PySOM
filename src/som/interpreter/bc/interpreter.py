@@ -713,18 +713,15 @@ def _lookup(layout, selector, method, bytecode_index):
     invoke = layout.lookup_invokable(selector)
 
     cache_size = 0
-    prev = None
     cache = first
     while cache is not None:
-        if not cache.expected_layout.is_latest:  # calculating size, but also discarding old entries
-            if prev is None:
-                method.set_inline_cache(bytecode_index, cache.next_entry)
-            else:
-                prev.next_entry = cache.next_entry
-        else:
-            cache_size += 1
-            prev = cache
-
+        # if not cache.expected_layout.is_latest:  # calculating size, but also discarding old entries
+        #     if prev is None:
+        #         method.set_inline_cache(bytecode_index, cache.next_entry)
+        #     else:
+        #         prev.next_entry = cache.next_entry
+        # else:
+        cache_size += 1
         cache = cache.next_entry
 
     if INLINE_CACHE_SIZE >= cache_size:
