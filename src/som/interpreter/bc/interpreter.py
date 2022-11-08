@@ -704,23 +704,30 @@ def get_self(frame, ctx_level):
 
 @elidable_promote("all")
 def _lookup(layout, selector, method, bytecode_index):
-    def get_cache_len(cache_list):
-        cache_entry = cache_list
-        cache_len = 0
-        while cache_entry is not None:
-            cache_len += 1
-            cache_entry = cache_entry.next_entry
-        return cache_len
-
     cache = first = method.get_inline_cache(bytecode_index)
     while cache is not None:
-        if cache.expected_layout is layout:
+        if cache.expected_layout.is_latest and cache.expected_layout is layout:
             return cache.get_cached_method()  # might be slightly faster to use the node's dispatch methods directly
         cache = cache.next_entry
 
     invoke = layout.lookup_invokable(selector)
 
-    if INLINE_CACHE_SIZE >= get_cache_len(first):
+    cache_size = 0
+    prev = None
+    cache = first
+    while cache is not None:
+        if not cache.expected_layout.is_latest:  # calculating size, but also discarding old entries
+            if prev is None:
+                first = cache.next_entry
+            else:
+                prev.next_entry = cache.next_entry
+        else:
+            cache_size += 1
+            prev = cache
+
+        cache = cache.next_entry
+
+    if INLINE_CACHE_SIZE >= cache_size:
         method.set_inline_cache(bytecode_index, CachedDispatchNode(rcvr_class=layout, method=invoke, next_entry=first))
 
     return invoke
@@ -730,13 +737,19 @@ def _update_object_and_invalidate_old_caches(obj, method, bytecode_index, univer
     obj.update_layout_to_match_class()
     obj.get_object_layout(universe)
 
-    cached_layout1 = method.get_inline_cache(bytecode_index)
-    if cached_layout1 is not None and not cached_layout1.expected_layout.is_latest:
-        method.set_inline_cache(bytecode_index, None)
+    prev = None
+    cache = method.get_inline_cache(bytecode_index)
+    while cache is not None:
+        if not cache.expected_layout.is_latest:
+            if prev is None:
+                cache = cache.next_entry
+                method.set_inline_cache(cache, bytecode_index)  # if the first entry is invalid, we need to set it to the next one
+            else:
+                prev.next_entry = cache.next_entry
+        else:
+            prev = cache
 
-    cached_layout2 = method.get_inline_cache(bytecode_index + 1)
-    if cached_layout2 is not None and not cached_layout2.expected_layout.is_latest:
-        method.set_inline_cache(bytecode_index + 1, None)
+        cache = cache.next_entry
 
 
 def _send_does_not_understand(receiver, selector, stack, stack_ptr):
