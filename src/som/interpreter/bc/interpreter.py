@@ -707,7 +707,7 @@ def _lookup(layout, selector, method, bytecode_index):
     cache = first = method.get_inline_cache(bytecode_index)
     while cache is not None:
         if cache.expected_layout is layout:
-            return cache.get_cached_method()  # might be slightly faster to use the node's dispatch methods directly
+            return cache.get_cached_method()
         cache = cache.next_entry
 
     invoke = layout.lookup_invokable(selector)
@@ -715,12 +715,6 @@ def _lookup(layout, selector, method, bytecode_index):
     cache_size = 0
     cache = first
     while cache is not None:
-        # if not cache.expected_layout.is_latest:  # calculating size, but also discarding old entries
-        #     if prev is None:
-        #         method.set_inline_cache(bytecode_index, cache.next_entry)
-        #     else:
-        #         prev.next_entry = cache.next_entry
-        # else:
         cache_size += 1
         cache = cache.next_entry
 
@@ -740,7 +734,7 @@ def _update_object_and_invalidate_old_caches(obj, method, bytecode_index, univer
         if not cache.expected_layout.is_latest:
             if prev is None:
                 cache = cache.next_entry
-                method.set_inline_cache(bytecode_index, cache)  # if the first entry is invalid, we need to set it to the next one
+                method.set_inline_cache(bytecode_index, cache)
             else:
                 prev.next_entry = cache.next_entry
         else:
