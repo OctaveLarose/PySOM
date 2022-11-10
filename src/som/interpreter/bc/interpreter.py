@@ -706,7 +706,7 @@ def get_self(frame, ctx_level):
 def _lookup(layout, selector, method, bytecode_index):
     cache = first = method.get_inline_cache(bytecode_index)
     while cache is not None:
-        if cache.expected_layout.is_latest and cache.expected_layout is layout:
+        if cache.expected_layout is layout:
             return cache.get_cached_method()  # might be slightly faster to use the node's dispatch methods directly
         cache = cache.next_entry
 
