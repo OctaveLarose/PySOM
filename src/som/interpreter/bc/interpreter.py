@@ -6,7 +6,7 @@ from som.interpreter.ast.frame import (
     FRAME_AND_INNER_RCVR_IDX,
     get_inner_as_context,
 )
-from som.interpreter.ast.nodes.dispatch import CachedDispatchNode, INLINE_CACHE_SIZE
+from som.interpreter.ast.nodes.dispatch import CachedDispatchNode, INLINE_CACHE_SIZE, GenericDispatchNode
 from som.interpreter.bc.bytecodes import bytecode_length, Bytecodes, bytecode_as_str
 from som.interpreter.bc.frame import (
     get_block_at,
@@ -353,9 +353,9 @@ def interpret(method, frame, max_stack_size):
             receiver = stack[stack_ptr]
 
             layout = receiver.get_object_layout(current_universe)
-            invokable = _lookup(layout, signature, method, current_bc_idx)
-            if invokable is not None:
-                stack[stack_ptr] = invokable.invoke_1(receiver)
+            dispatch_node = _lookup(layout, signature, method, current_bc_idx, current_universe)
+            if dispatch_node is not None:
+                stack[stack_ptr] = dispatch_node.dispatch_1(receiver)
             elif not layout.is_latest:
                 _update_object_and_invalidate_old_caches(
                     receiver, method, current_bc_idx, current_universe
@@ -371,13 +371,13 @@ def interpret(method, frame, max_stack_size):
             receiver = stack[stack_ptr - 1]
 
             layout = receiver.get_object_layout(current_universe)
-            invokable = _lookup(layout, signature, method, current_bc_idx)
-            if invokable is not None:
+            dispatch_node = _lookup(layout, signature, method, current_bc_idx, current_universe)
+            if dispatch_node is not None:
                 arg = stack[stack_ptr]
                 if we_are_jitted():
                     stack[stack_ptr] = None
                 stack_ptr -= 1
-                stack[stack_ptr] = invokable.invoke_2(receiver, arg)
+                stack[stack_ptr] = dispatch_node.dispatch_2(receiver, arg)
             elif not layout.is_latest:
                 _update_object_and_invalidate_old_caches(
                     receiver, method, current_bc_idx, current_universe
@@ -393,8 +393,8 @@ def interpret(method, frame, max_stack_size):
             receiver = stack[stack_ptr - 2]
 
             layout = receiver.get_object_layout(current_universe)
-            invokable = _lookup(layout, signature, method, current_bc_idx)
-            if invokable is not None:
+            dispatch_node = _lookup(layout, signature, method, current_bc_idx, current_universe)
+            if dispatch_node is not None:
                 arg2 = stack[stack_ptr]
                 arg1 = stack[stack_ptr - 1]
 
@@ -403,7 +403,7 @@ def interpret(method, frame, max_stack_size):
                     stack[stack_ptr - 1] = None
 
                 stack_ptr -= 2
-                stack[stack_ptr] = invokable.invoke_3(receiver, arg1, arg2)
+                stack[stack_ptr] = dispatch_node.dispatch_3(receiver, arg1, arg2)
             elif not layout.is_latest:
                 _update_object_and_invalidate_old_caches(
                     receiver, method, current_bc_idx, current_universe
@@ -421,9 +421,9 @@ def interpret(method, frame, max_stack_size):
             ]
 
             layout = receiver.get_object_layout(current_universe)
-            invokable = _lookup(layout, signature, method, current_bc_idx)
-            if invokable is not None:
-                stack_ptr = invokable.invoke_n(stack, stack_ptr)
+            dispatch_node = _lookup(layout, signature, method, current_bc_idx, current_universe)
+            if dispatch_node is not None:
+                stack[stack_ptr] = dispatch_node.dispatch_n_bc(stack, stack_ptr, receiver)
             elif not layout.is_latest:
                 _update_object_and_invalidate_old_caches(
                     receiver, method, current_bc_idx, current_universe
@@ -630,30 +630,30 @@ def interpret(method, frame, max_stack_size):
             )
 
         elif bytecode == Bytecodes.q_super_send_1:
-            invokable = method.get_inline_cache(current_bc_idx)
-            stack[stack_ptr] = invokable.dispatch_1(stack[stack_ptr])
+            dispatch_node = method.get_inline_cache(current_bc_idx)
+            stack[stack_ptr] = dispatch_node.dispatch_1(stack[stack_ptr])
 
         elif bytecode == Bytecodes.q_super_send_2:
-            invokable = method.get_inline_cache(current_bc_idx)
+            dispatch_node = method.get_inline_cache(current_bc_idx)
             arg = stack[stack_ptr]
             if we_are_jitted():
                 stack[stack_ptr] = None
             stack_ptr -= 1
-            stack[stack_ptr] = invokable.dispatch_2(stack[stack_ptr], arg)
+            stack[stack_ptr] = dispatch_node.dispatch_2(stack[stack_ptr], arg)
 
         elif bytecode == Bytecodes.q_super_send_3:
-            invokable = method.get_inline_cache(current_bc_idx)
+            dispatch_node = method.get_inline_cache(current_bc_idx)
             arg2 = stack[stack_ptr]
             arg1 = stack[stack_ptr - 1]
             if we_are_jitted():
                 stack[stack_ptr] = None
                 stack[stack_ptr - 1] = None
             stack_ptr -= 2
-            stack[stack_ptr] = invokable.dispatch_3(stack[stack_ptr], arg1, arg2)
+            stack[stack_ptr] = dispatch_node.dispatch_3(stack[stack_ptr], arg1, arg2)
 
         elif bytecode == Bytecodes.q_super_send_n:
-            invokable = method.get_inline_cache(current_bc_idx)
-            stack_ptr = invokable.dispatch_args(stack, stack_ptr)
+            dispatch_node = method.get_inline_cache(current_bc_idx)
+            stack_ptr = dispatch_node.dispatch_args(stack, stack_ptr)
 
         elif bytecode == Bytecodes.push_local:
             method.patch_variable_access(current_bc_idx)
@@ -703,14 +703,12 @@ def get_self(frame, ctx_level):
 
 
 @elidable_promote("all")
-def _lookup(layout, selector, method, bytecode_index):
+def _lookup(layout, selector, method, bytecode_index, universe):
     cache = first = method.get_inline_cache(bytecode_index)
     while cache is not None:
         if cache.expected_layout is layout:
-            return cache.get_cached_method()
+            return cache
         cache = cache.next_entry
-
-    invoke = layout.lookup_invokable(selector)
 
     cache_size = 0
     cache = first
@@ -719,9 +717,12 @@ def _lookup(layout, selector, method, bytecode_index):
         cache = cache.next_entry
 
     if INLINE_CACHE_SIZE >= cache_size:
-        method.set_inline_cache(bytecode_index, CachedDispatchNode(rcvr_class=layout, method=invoke, next_entry=first))
+        invoke = layout.lookup_invokable(selector)
+        new_dispatch_node = CachedDispatchNode(rcvr_class=layout, method=invoke, next_entry=first)
+        method.set_inline_cache(bytecode_index, new_dispatch_node)
+        return new_dispatch_node
 
-    return invoke
+    return GenericDispatchNode(selector, universe)
 
 
 def _update_object_and_invalidate_old_caches(obj, method, bytecode_index, universe):
