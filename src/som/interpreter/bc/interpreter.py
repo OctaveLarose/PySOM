@@ -697,8 +697,7 @@ def _update_object_and_invalidate_old_caches(obj, method, bytecode_index, univer
     while cache is not None:
         if not cache.expected_layout.is_latest:
             if prev is None:
-                cache = cache.next_entry
-                method.set_inline_cache(bytecode_index, cache)
+                method.set_inline_cache(bytecode_index, cache.next_entry)
             else:
                 prev.next_entry = cache.next_entry
         else:
