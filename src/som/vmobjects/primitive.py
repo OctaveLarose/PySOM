@@ -72,10 +72,6 @@ class _BcPrimitive(_AbstractPrimitive):
         prim_fn = self._prim_fn
         return prim_fn(self, stack, stack_ptr)
 
-    def invoke_args(self, rcvr, args):
-        prim_fn = self._prim_fn
-        return prim_fn(self, rcvr, args)
-
     def get_number_of_signature_arguments(self):
         return self._signature.get_number_of_signature_arguments()
 

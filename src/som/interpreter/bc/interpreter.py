@@ -50,7 +50,7 @@ def _do_super_send(bytecode_index, method, stack, stack_ptr):
             invokable, num_args, receiver, stack, stack_ptr
         )
     else:
-        stack_ptr = _send_does_not_understand(
+        stack_ptr = send_does_not_understand(
             receiver, invokable.get_signature(), stack, stack_ptr
         )
     return stack_ptr
@@ -362,7 +362,7 @@ def interpret(method, frame, max_stack_size):
                 )
                 next_bc_idx = current_bc_idx
             else:
-                stack_ptr = _send_does_not_understand(
+                stack_ptr = send_does_not_understand(
                     receiver, signature, stack, stack_ptr
                 )
 
@@ -384,7 +384,7 @@ def interpret(method, frame, max_stack_size):
                 )
                 next_bc_idx = current_bc_idx
             else:
-                stack_ptr = _send_does_not_understand(
+                stack_ptr = send_does_not_understand(
                     receiver, signature, stack, stack_ptr
                 )
 
@@ -410,7 +410,7 @@ def interpret(method, frame, max_stack_size):
                 )
                 next_bc_idx = current_bc_idx
             else:
-                stack_ptr = _send_does_not_understand(
+                stack_ptr = send_does_not_understand(
                     receiver, signature, stack, stack_ptr
                 )
 
@@ -423,14 +423,14 @@ def interpret(method, frame, max_stack_size):
             layout = receiver.get_object_layout(current_universe)
             dispatch_node = _lookup(layout, signature, method, current_bc_idx, current_universe)
             if dispatch_node is not None:
-                stack[stack_ptr] = dispatch_node.dispatch_n_bc(stack, stack_ptr, receiver)
+                stack_ptr = dispatch_node.dispatch_n_bc(stack, stack_ptr, receiver)
             elif not layout.is_latest:
                 _update_object_and_invalidate_old_caches(
                     receiver, method, current_bc_idx, current_universe
                 )
                 next_bc_idx = current_bc_idx
             else:
-                stack_ptr = _send_does_not_understand(
+                stack_ptr = send_does_not_understand(
                     receiver, signature, stack, stack_ptr
                 )
 
@@ -653,7 +653,7 @@ def interpret(method, frame, max_stack_size):
 
         elif bytecode == Bytecodes.q_super_send_n:
             dispatch_node = method.get_inline_cache(current_bc_idx)
-            stack_ptr = dispatch_node.dispatch_args(stack, stack_ptr)
+            stack_ptr = dispatch_node.dispatch_n_bc(stack, stack_ptr, None)
 
         elif bytecode == Bytecodes.push_local:
             method.patch_variable_access(current_bc_idx)
@@ -718,9 +718,10 @@ def _lookup(layout, selector, method, bytecode_index, universe):
 
     if INLINE_CACHE_SIZE >= cache_size:
         invoke = layout.lookup_invokable(selector)
-        new_dispatch_node = CachedDispatchNode(rcvr_class=layout, method=invoke, next_entry=first)
-        method.set_inline_cache(bytecode_index, new_dispatch_node)
-        return new_dispatch_node
+        if invoke is not None: # TODO having to check is a bad sign, should check if it's the latest layout instead probably
+            new_dispatch_node = CachedDispatchNode(rcvr_class=layout, method=invoke, next_entry=first)
+            method.set_inline_cache(bytecode_index, new_dispatch_node)
+            return new_dispatch_node
 
     return GenericDispatchNode(selector, universe)
 
@@ -744,7 +745,7 @@ def _update_object_and_invalidate_old_caches(obj, method, bytecode_index, univer
         cache = cache.next_entry
 
 
-def _send_does_not_understand(receiver, selector, stack, stack_ptr):
+def send_does_not_understand(receiver, selector, stack, stack_ptr):
     # ignore self
     number_of_arguments = selector.get_number_of_signature_arguments() - 1
     arguments_array = Array.from_size(number_of_arguments)
