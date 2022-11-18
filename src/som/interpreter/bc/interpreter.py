@@ -13,7 +13,7 @@ from som.interpreter.bc.frame import (
     get_self_dynamically,
 )
 from som.interpreter.control_flow import ReturnException
-from som.interpreter.send import lookup_and_send_2, lookup_and_send_3
+from som.interpreter.send import lookup_and_send_2, lookup_and_send_3, get_clean_inline_cache, get_inline_cache_size
 from som.vm.globals import nilObject, trueObject, falseObject
 from som.vmobjects.array import Array
 from som.vmobjects.block_bc import BcBlock
@@ -672,12 +672,7 @@ def _lookup(receiver, selector, method, bytecode_index, universe):
     if not layout.is_latest:
         _update_object_and_invalidate_old_caches(receiver, method, bytecode_index, universe)
 
-    cache_size = 0
-    cache = first
-    while cache is not None:
-        cache_size += 1
-        cache = cache.next_entry
-
+    cache_size = get_inline_cache_size(first)
     if INLINE_CACHE_SIZE >= cache_size:
         invoke = layout.lookup_invokable(selector)
         if invoke is not None:
@@ -692,18 +687,8 @@ def _update_object_and_invalidate_old_caches(obj, method, bytecode_index, univer
     obj.update_layout_to_match_class()
     obj.get_object_layout(universe)
 
-    prev = None
-    cache = method.get_inline_cache(bytecode_index)
-    while cache is not None:
-        if not cache.expected_layout.is_latest:
-            if prev is None:
-                method.set_inline_cache(bytecode_index, cache.next_entry)
-            else:
-                prev.next_entry = cache.next_entry
-        else:
-            prev = cache
-
-        cache = cache.next_entry
+    old_cache = method.get_inline_cache(bytecode_index)
+    method.set_inline_cache(bytecode_index, get_clean_inline_cache(old_cache))
 
 
 def send_does_not_understand(receiver, selector, stack, stack_ptr):
