@@ -352,14 +352,16 @@ def interpret(method, frame, max_stack_size):
             signature = method.get_constant(current_bc_idx)
             receiver = stack[stack_ptr]
 
-            dispatch_node = _lookup(receiver, signature, method, current_bc_idx, current_universe)
+            layout = receiver.get_object_layout(current_universe)
+            dispatch_node = _lookup(layout, signature, method, current_bc_idx, current_universe)
             stack[stack_ptr] = dispatch_node.dispatch_1(receiver)
 
         elif bytecode == Bytecodes.send_2:
             signature = method.get_constant(current_bc_idx)
             receiver = stack[stack_ptr - 1]
 
-            dispatch_node = _lookup(receiver, signature, method, current_bc_idx, current_universe)
+            layout = receiver.get_object_layout(current_universe)
+            dispatch_node = _lookup(layout, signature, method, current_bc_idx, current_universe)
 
             arg = stack[stack_ptr]
             if we_are_jitted():
@@ -372,7 +374,8 @@ def interpret(method, frame, max_stack_size):
             signature = method.get_constant(current_bc_idx)
             receiver = stack[stack_ptr - 2]
 
-            dispatch_node = _lookup(receiver, signature, method, current_bc_idx, current_universe)
+            layout = receiver.get_object_layout(current_universe)
+            dispatch_node = _lookup(layout, signature, method, current_bc_idx, current_universe)
 
             arg2 = stack[stack_ptr]
             arg1 = stack[stack_ptr - 1]
@@ -389,7 +392,8 @@ def interpret(method, frame, max_stack_size):
                 stack_ptr - (signature.get_number_of_signature_arguments() - 1)
             ]
 
-            dispatch_node = _lookup(receiver, signature, method, current_bc_idx, current_universe)
+            layout = receiver.get_object_layout(current_universe)
+            dispatch_node = _lookup(layout, signature, method, current_bc_idx, current_universe)
             stack_ptr = dispatch_node.dispatch_n_bc(stack, stack_ptr, receiver)
 
         elif bytecode == Bytecodes.super_send:
@@ -661,16 +665,15 @@ def get_self(frame, ctx_level):
 
 
 @elidable_promote("all")
-def _lookup(receiver, selector, method, bytecode_index, universe):
-    layout = receiver.get_object_layout(universe)
+def _lookup(layout, selector, method, bytecode_index, universe):
     cache = first = method.get_inline_cache(bytecode_index)
     while cache is not None:
         if cache.expected_layout is layout:
             return cache
         cache = cache.next_entry
 
-    if not layout.is_latest:
-        _update_object_and_invalidate_old_caches(receiver, method, bytecode_index, universe)
+    # if not layout.is_latest:
+    #     _update_object_and_invalidate_old_caches(receiver, method, bytecode_index, universe)
 
     cache_size = get_inline_cache_size(first)
     if INLINE_CACHE_SIZE >= cache_size:
