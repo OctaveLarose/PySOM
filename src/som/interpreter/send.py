@@ -1,3 +1,4 @@
+from rlib import jit
 from som.vm.symbols import symbol_for
 
 
@@ -18,6 +19,7 @@ def lookup_and_send_3(receiver, arg1, arg2, selector_string):
     return invokable.invoke_3(receiver, arg1, arg2)
 
 
+@jit.elidable
 def get_inline_cache_size(cache):
     size = 0
     while cache is not None:
@@ -26,6 +28,7 @@ def get_inline_cache_size(cache):
     return size
 
 
+@jit.elidable
 def get_clean_inline_cache(cache):
     prev = None
     new_cache = cache
