@@ -353,7 +353,11 @@ def interpret(method, frame, max_stack_size):
             receiver = stack[stack_ptr]
 
             layout = receiver.get_object_layout(current_universe)
-            dispatch_node = _lookup(receiver, layout, signature, method, current_bc_idx, current_universe)
+            dispatch_node = _lookup(layout, signature, method, current_bc_idx, current_universe)
+
+            if isinstance(layout, GenericDispatchNode) and not layout.is_latest:
+                _update_object_and_invalidate_old_caches(receiver, method, current_bc_idx, current_universe)
+
             stack[stack_ptr] = dispatch_node.dispatch_1(receiver)
 
         elif bytecode == Bytecodes.send_2:
@@ -361,7 +365,10 @@ def interpret(method, frame, max_stack_size):
             receiver = stack[stack_ptr - 1]
 
             layout = receiver.get_object_layout(current_universe)
-            dispatch_node = _lookup(receiver, layout, signature, method, current_bc_idx, current_universe)
+            dispatch_node = _lookup(layout, signature, method, current_bc_idx, current_universe)
+
+            if isinstance(layout, GenericDispatchNode) and not layout.is_latest:
+                _update_object_and_invalidate_old_caches(receiver, method, current_bc_idx, current_universe)
 
             arg = stack[stack_ptr]
             if we_are_jitted():
@@ -375,7 +382,10 @@ def interpret(method, frame, max_stack_size):
             receiver = stack[stack_ptr - 2]
 
             layout = receiver.get_object_layout(current_universe)
-            dispatch_node = _lookup(receiver, layout, signature, method, current_bc_idx, current_universe)
+            dispatch_node = _lookup(layout, signature, method, current_bc_idx, current_universe)
+
+            if isinstance(layout, GenericDispatchNode) and not layout.is_latest:
+                _update_object_and_invalidate_old_caches(receiver, method, current_bc_idx, current_universe)
 
             arg2 = stack[stack_ptr]
             arg1 = stack[stack_ptr - 1]
@@ -393,7 +403,11 @@ def interpret(method, frame, max_stack_size):
             ]
 
             layout = receiver.get_object_layout(current_universe)
-            dispatch_node = _lookup(receiver, layout, signature, method, current_bc_idx, current_universe)
+            dispatch_node = _lookup(layout, signature, method, current_bc_idx, current_universe)
+
+            if isinstance(layout, GenericDispatchNode) and not layout.is_latest:
+                _update_object_and_invalidate_old_caches(receiver, method, current_bc_idx, current_universe)
+
             stack_ptr = dispatch_node.dispatch_n_bc(stack, stack_ptr, receiver)
 
         elif bytecode == Bytecodes.super_send:
@@ -664,16 +678,13 @@ def get_self(frame, ctx_level):
     return get_block_at(frame, ctx_level).get_from_outer(FRAME_AND_INNER_RCVR_IDX)
 
 
-@elidable_promote("1,2,3,4,5")
-def _lookup(receiver, layout, selector, method, bytecode_index, universe):
+@elidable_promote("all")
+def _lookup(layout, selector, method, bytecode_index, universe):
     cache = first = method.get_inline_cache(bytecode_index)
     while cache is not None:
         if cache.expected_layout is layout:
             return cache
         cache = cache.next_entry
-
-    if not layout.is_latest:
-        _update_object_and_invalidate_old_caches(receiver, method, bytecode_index, universe)
 
     cache_size = get_inline_cache_size(first)
     if INLINE_CACHE_SIZE >= cache_size:
