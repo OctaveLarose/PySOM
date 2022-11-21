@@ -29,9 +29,11 @@ def get_inline_cache_size(cache):
 
 
 @jit.elidable
-def get_clean_inline_cache(cache):
+def get_clean_inline_cache_and_size(cache):
     prev = None
     new_cache = cache
+    size = 0
+
     while cache is not None:
         if not cache.expected_layout.is_latest:
             if prev is None:
@@ -40,7 +42,8 @@ def get_clean_inline_cache(cache):
                 prev.next_entry = cache.next_entry
         else:
             prev = cache
+            size += 1
 
         cache = cache.next_entry
 
-    return new_cache
+    return new_cache, size

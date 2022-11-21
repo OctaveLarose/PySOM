@@ -8,7 +8,7 @@ from som.interpreter.ast.nodes.dispatch import (
     GenericDispatchNode,
 )
 from som.interpreter.ast.nodes.expression_node import ExpressionNode
-from som.interpreter.send import get_clean_inline_cache, get_inline_cache_size
+from som.interpreter.send import get_clean_inline_cache_and_size
 
 
 class _AbstractGenericMessageNode(ExpressionNode):
@@ -45,8 +45,7 @@ class _AbstractGenericMessageNode(ExpressionNode):
             if cache is not None:
                 return cache
 
-        self._dispatch = get_clean_inline_cache(self._dispatch)
-        cache_size = get_inline_cache_size(self._dispatch)
+        self._dispatch, cache_size = get_clean_inline_cache_and_size(self._dispatch)
 
         if cache_size < INLINE_CACHE_SIZE:
             method = layout.lookup_invokable(self._selector)
