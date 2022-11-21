@@ -13,7 +13,7 @@ from som.interpreter.bc.frame import (
     get_self_dynamically,
 )
 from som.interpreter.control_flow import ReturnException
-from som.interpreter.send import lookup_and_send_2, lookup_and_send_3, get_clean_inline_cache, get_inline_cache_size
+from som.interpreter.send import lookup_and_send_2, lookup_and_send_3, get_inline_cache_size, get_clean_inline_cache_and_size
 from som.vm.globals import nilObject, trueObject, falseObject
 from som.vmobjects.array import Array
 from som.vmobjects.block_bc import BcBlock
@@ -702,7 +702,7 @@ def _update_object_and_invalidate_old_caches(obj, method, bytecode_index, univer
     obj.get_object_layout(universe)
 
     old_cache = method.get_inline_cache(bytecode_index)
-    method.set_inline_cache(bytecode_index, get_clean_inline_cache(old_cache))
+    method.set_inline_cache(bytecode_index, get_clean_inline_cache_and_size(old_cache)[0])
 
 
 def send_does_not_understand(receiver, selector, stack, stack_ptr):
