@@ -221,19 +221,18 @@ class BcMethod(BcAbstractMethod):
         )
         return interpret(self, new_frame, self._maximum_number_of_stack_elements)
 
-    def invoke_n(self, stack, stack_ptr):
+    def invoke_n(self, stack_info):
         new_frame = create_frame(
             self._arg_inner_access,
             self._size_frame,
             self._size_inner,
-            stack,
-            stack_ptr,
+            stack_info,
             self._number_of_arguments,
         )
 
         result = interpret(self, new_frame, self._maximum_number_of_stack_elements)
         return stack_pop_old_arguments_and_push_result(
-            stack, stack_ptr, self._number_of_arguments, result
+            stack_info, self._number_of_arguments, result
         )
 
     def inline(self, mgenc):
@@ -635,13 +634,12 @@ class BcMethodNLR(BcMethod):
         )
         return _interp_with_nlr(self, new_frame, self._maximum_number_of_stack_elements)
 
-    def invoke_n(self, stack, stack_ptr):
+    def invoke_n(self, stack_info):
         new_frame = create_frame(
             self._arg_inner_access,
             self._size_frame,
             self._size_inner,
-            stack,
-            stack_ptr,
+            stack_info,
             self._number_of_arguments,
         )
         inner = get_inner_as_context(new_frame)
@@ -649,7 +647,7 @@ class BcMethodNLR(BcMethod):
         try:
             result = interpret(self, new_frame, self._maximum_number_of_stack_elements)
             stack_ptr = stack_pop_old_arguments_and_push_result(
-                stack, stack_ptr, self._number_of_arguments, result
+                stack_info, self._number_of_arguments, result
             )
             mark_as_no_longer_on_stack(inner)
             return stack_ptr
@@ -657,7 +655,7 @@ class BcMethodNLR(BcMethod):
             mark_as_no_longer_on_stack(inner)
             if e.has_reached_target(inner):
                 return stack_pop_old_arguments_and_push_result(
-                    stack, stack_ptr, self._number_of_arguments, e.get_result()
+                    stack_info, self._number_of_arguments, e.get_result()
                 )
             raise e
 

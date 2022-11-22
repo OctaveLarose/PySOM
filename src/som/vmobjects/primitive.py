@@ -68,9 +68,9 @@ class _BcPrimitive(_AbstractPrimitive):
         _AbstractPrimitive.__init__(self, signature_string, is_empty)
         self._prim_fn = prim_fn
 
-    def invoke_n(self, stack, stack_ptr):
+    def invoke_n(self, stack_info):
         prim_fn = self._prim_fn
-        return prim_fn(self, stack, stack_ptr)
+        return prim_fn(self, stack_info)
 
     def get_number_of_signature_arguments(self):
         return self._signature.get_number_of_signature_arguments()

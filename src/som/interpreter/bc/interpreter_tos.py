@@ -6,14 +6,15 @@ from som.interpreter.ast.frame import (
     FRAME_AND_INNER_RCVR_IDX,
     get_inner_as_context,
 )
-from som.interpreter.ast.nodes.dispatch import CachedDispatchNode, INLINE_CACHE_SIZE, GenericDispatchNode
-from som.interpreter.bc.bytecodes import bytecode_length, Bytecodes, bytecode_as_str
+
+from som.interpreter.bc.bytecodes import bytecode_length, Bytecodes
 from som.interpreter.bc.frame import (
     get_block_at,
     get_self_dynamically,
 )
 from som.interpreter.bc.interpreter import _unknown_bytecode, get_printable_location, _not_yet_implemented, \
     _update_object_and_invalidate_old_caches, get_self, _lookup, _do_super_send, _do_return_non_local
+from som.interpreter.bc.stack_ops import get_tos, push_1, pop_1, read_stack_elem, set_tos, pop_2
 from som.interpreter.control_flow import ReturnException
 from som.interpreter.send import lookup_and_send_2, lookup_and_send_3
 from som.vm.globals import nilObject, trueObject, falseObject
@@ -22,59 +23,7 @@ from som.vmobjects.block_bc import BcBlock
 from som.vmobjects.integer import int_0, int_1
 
 from rlib import jit
-from rlib.jit import promote, we_are_jitted
-
-
-def push_1(val, stack_info):
-    if stack_info["is_tos_reg_free"]:
-        stack_info["tos_reg"] = val
-        stack_info["is_tos_reg_free"] = False
-    else:
-        stack_info["stack_ptr"] += 1
-        stack_info["stack"][stack_info["stack_ptr"]] = stack_info["tos_reg"]
-        stack_info["tos_reg"] = val
-
-
-def pop_1(stack_info):
-    if not stack_info["is_tos_reg_free"]:
-        stack_info["is_tos_reg_free"] = True
-        val = stack_info["tos_reg"]
-    else:
-        val = stack_info["stack"][stack_info["stack_ptr"]]
-        if we_are_jitted():
-            stack_info["stack"][stack_info["stack_ptr"]] = None
-        stack_info["stack_ptr"] -= 1
-
-    return val
-
-
-def pop_2(stack_info): # could have a faster implem but not bothering for now
-    return pop_1(stack_info), pop_2(stack_info)
-
-
-def get_tos(stack_info):
-    if not stack_info["is_tos_reg_free"]:
-        return stack_info["tos_reg"]
-    else:
-        return stack_info["stack"][stack_info["stack_ptr"]]
-
-
-def set_tos(val, stack_info):
-    if stack_info["is_tos_reg_free"]:
-        stack_info["tos_reg"] = val
-    else:
-        stack_info["stack"][stack_info["stack_ptr"]] = val
-
-
-def read_stack_elem(offset, stack_info):
-    if stack_info["is_tos_reg_free"]:
-        return stack_info["stack"][stack_info["stack_ptr"] - offset]
-
-    if not stack_info["is_tos_reg_free"]:
-        if offset == 0:
-            return stack_info["tos_reg"]
-        else:
-            return stack_info["stack"][stack_info["stack_ptr"] - offset + 1]
+from rlib.jit import promote
 
 
 @jit.unroll_safe
@@ -320,7 +269,7 @@ def interpret(method, frame, max_stack_size):
             layout = receiver.get_object_layout(current_universe)
             invokable = _lookup(layout, signature, method, current_bc_idx)
             if invokable is not None:
-                stack_ptr = invokable.invoke_n(stack_info["stack"], stack_info["stack_ptr"])
+                stack_ptr = invokable.invoke_n(stack_info)
             elif not layout.is_latest:
                 _update_object_and_invalidate_old_caches(
                     receiver, method, current_bc_idx, current_universe
@@ -330,7 +279,7 @@ def interpret(method, frame, max_stack_size):
                 send_does_not_understand(receiver, signature, stack_info)
 
         elif bytecode == Bytecodes.super_send:
-            stack_ptr = _do_super_send(current_bc_idx, method, stack_info["stack"], stack_info["stack_ptr"]) # TODO needs to handle TOS too
+            stack_ptr = _do_super_send(current_bc_idx, method, stack_info["stack"], stack_info["stack_ptr"])  # TODO needs to handle TOS too
 
         elif bytecode == Bytecodes.return_local:
             return get_tos(stack_info)
@@ -522,7 +471,7 @@ def interpret(method, frame, max_stack_size):
 
         elif bytecode == Bytecodes.q_super_send_n:  # TODO code will break without changing the implem of these dispatch functions
             invokable = method.get_inline_cache(current_bc_idx)
-            stack_ptr = invokable.dispatch_n(stack_info["stack"], stack_info["stack_ptr"])
+            stack_ptr = invokable.dispatch_n(stack_info)
 
         elif bytecode == Bytecodes.push_local:
             method.patch_variable_access(current_bc_idx)

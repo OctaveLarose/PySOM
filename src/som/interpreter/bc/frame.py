@@ -1,5 +1,6 @@
 from rlib import jit
 from rlib.debug import make_sure_not_resized
+from som.interpreter.bc.stack_ops import push_1, pop_1, read_stack_elem, set_tos
 
 from som.vm.globals import nilObject, trueObject
 from som.interpreter.ast.frame import (
@@ -38,14 +39,13 @@ def create_frame(
     arg_inner_access_reversed,
     size_frame,
     size_inner,
-    prev_stack,
-    prev_stack_ptr,
+    prev_stack_info,
     num_args,
 ):
     frame = [_erase_obj(nilObject)] * size_frame
     make_sure_not_resized(frame)
 
-    receiver = prev_stack[prev_stack_ptr - (num_args - 1)]
+    receiver = read_stack_elem(num_args - 1, prev_stack_info)
     assert num_args - 1 == len(arg_inner_access_reversed)  # num_args without rcvr
 
     if size_inner > 0:
@@ -60,14 +60,13 @@ def create_frame(
             frame,
             inner,
             arg_inner_access_reversed,
-            prev_stack,
-            prev_stack_ptr,
+            prev_stack_info,
             num_args - 1,
         )
     else:
         frame[0] = _erase_list(None)
         frame[FRAME_AND_INNER_RCVR_IDX] = _erase_obj(receiver)
-        _set_arguments_without_inner(frame, prev_stack, prev_stack_ptr, num_args - 1)
+        _set_arguments_without_inner(frame, prev_stack_info, num_args - 1)
 
     return frame
 
@@ -114,13 +113,13 @@ def create_frame_3(
 
 @jit.unroll_safe
 def _set_arguments_without_inner(
-    frame, prev_stack, prev_stack_ptr, num_args_without_rcvr
+    frame, prev_stack_info, num_args_without_rcvr
 ):
     arg_i = num_args_without_rcvr - 1
     frame_i = _FRAME_AND_INNER_FIRST_ARG
 
     while arg_i >= 0:
-        frame[frame_i] = _erase_obj(prev_stack[prev_stack_ptr - arg_i])
+        frame[frame_i] = _erase_obj(read_stack_elem(arg_i, prev_stack_info))
         frame_i += 1
         arg_i -= 1
 
@@ -130,8 +129,7 @@ def _set_arguments_with_inner(
     frame,
     inner,
     arg_inner_access_reversed,
-    prev_stack,
-    prev_stack_ptr,
+    prev_stack_info,
     num_args_without_rcvr,
 ):
     arg_i = num_args_without_rcvr - 1
@@ -139,7 +137,7 @@ def _set_arguments_with_inner(
     inner_i = _FRAME_AND_INNER_FIRST_ARG
 
     while arg_i >= 0:
-        arg_val = prev_stack[prev_stack_ptr - arg_i]
+        arg_val = read_stack_elem(arg_i, prev_stack_info)
         if arg_inner_access_reversed[arg_i]:
             inner[inner_i] = arg_val
             inner_i += 1
@@ -150,13 +148,11 @@ def _set_arguments_with_inner(
 
 
 @jit.unroll_safe
-def stack_pop_old_arguments_and_push_result(stack, stack_ptr, num_args, result):
+def stack_pop_old_arguments_and_push_result(stack_info, num_args, result):
     for _ in range(num_args):
-        stack[stack_ptr] = None
-        stack_ptr -= 1
-    stack_ptr += 1
-    stack[stack_ptr] = result
-    return stack_ptr
+        set_tos(None, stack_info)
+        pop_1(stack_info)
+    push_1(result, stack_info)
 
 
 @jit.unroll_safe
