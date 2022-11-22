@@ -6,7 +6,7 @@ from som.interpreter.ast.frame import (
     FRAME_AND_INNER_RCVR_IDX,
     get_inner_as_context,
 )
-from som.interpreter.ast.nodes.dispatch import GenericDispatchNode
+from som.interpreter.ast.nodes.dispatch import GenericDispatchNode, CachedDispatchNode
 
 from som.interpreter.bc.bytecodes import bytecode_length, Bytecodes
 from som.interpreter.bc.frame import (
@@ -14,8 +14,8 @@ from som.interpreter.bc.frame import (
     get_self_dynamically,
 )
 from som.interpreter.bc.interpreter import _unknown_bytecode, get_printable_location, _not_yet_implemented, \
-    _update_object_and_invalidate_old_caches, get_self, _lookup, _do_super_send, _do_return_non_local
-from som.interpreter.bc.stack_ops import get_tos, push_1, pop_1, read_stack_elem, set_tos, pop_2
+    _update_object_and_invalidate_old_caches, get_self, _lookup, _do_return_non_local
+from som.interpreter.bc.stack_ops import get_tos, push_1, pop_1, read_stack_elem, set_tos, pop_2, StackInfo
 from som.interpreter.control_flow import ReturnException
 from som.interpreter.send import lookup_and_send_2, lookup_and_send_3
 from som.vm.globals import nilObject, trueObject, falseObject
@@ -24,7 +24,58 @@ from som.vmobjects.block_bc import BcBlock
 from som.vmobjects.integer import int_0, int_1
 
 from rlib import jit
-from rlib.jit import promote
+from rlib.jit import promote, we_are_jitted
+
+
+def _do_super_send(bytecode_index, method, stack_info):
+    signature = method.get_constant(bytecode_index)
+
+    receiver_class = method.get_holder().get_super_class()
+    invokable = receiver_class.lookup_invokable(signature)
+
+    num_args = invokable.get_number_of_signature_arguments()
+    receiver = read_stack_elem(num_args - 1, stack_info)
+
+    if invokable:
+        first = method.get_inline_cache(bytecode_index)
+        method.set_inline_cache(
+            bytecode_index,
+            CachedDispatchNode(
+                receiver_class.get_layout_for_instances(), invokable, first
+            ),
+        )
+        if num_args == 1:
+            bc = Bytecodes.q_super_send_1
+        elif num_args == 2:
+            bc = Bytecodes.q_super_send_2
+        elif num_args == 3:
+            bc = Bytecodes.q_super_send_3
+        else:
+            bc = Bytecodes.q_super_send_n
+        method.set_bytecode(bytecode_index, bc)
+        _invoke_invokable_slow_path(
+            invokable, num_args, receiver, stack_info
+        )
+    else:
+        send_does_not_understand(
+            receiver, invokable.get_signature(), stack_info
+        )
+
+
+def _invoke_invokable_slow_path(invokable, num_args, receiver, stack_info):
+    if num_args == 1:
+        set_tos(invokable.invoke_1(receiver), stack_info)
+
+    elif num_args == 2:
+        arg = pop_1(stack_info)
+        set_tos(invokable.invoke_2(receiver, arg), stack_info)
+
+    elif num_args == 3:
+        arg2, arg1 = pop_2(stack_info)
+        set_tos(invokable.invoke_3(receiver, arg1, arg2), stack_info)
+
+    else:
+        invokable.invoke_n(stack_info)
 
 
 @jit.unroll_safe
@@ -33,18 +84,15 @@ def interpret(method, frame, max_stack_size):
 
     current_bc_idx = 0
 
-    stack_info = {"stack" : [None] * max_stack_size,
-                  "stack_ptr": -1,
-                  "tos_reg": None,
-                  "is_tos_reg_free": False}
+    stack_info = StackInfo(max_stack_size)
 
     while True:
         jitdriver.jit_merge_point(
             current_bc_idx=current_bc_idx,
-            stack_ptr=stack_info["stack_ptr"],
+            stack_ptr=stack_info.stack_ptr,
             method=method,
             frame=frame,
-            stack=stack_info["stack"],
+            stack=stack_info.stack,
         )
 
         bytecode = method.get_bytecode(current_bc_idx)
@@ -55,7 +103,7 @@ def interpret(method, frame, max_stack_size):
         # Compute the next bytecode index
         next_bc_idx = current_bc_idx + bc_length
 
-        promote(stack_info["stack_ptr"])
+        promote(stack_info.stack_ptr)
 
         # Handle the current bytecode
         if bytecode == Bytecodes.halt:
@@ -270,7 +318,7 @@ def interpret(method, frame, max_stack_size):
             stack_ptr = dispatch_node.dispatch_n_bc(stack_info, receiver)
 
         elif bytecode == Bytecodes.super_send:
-            stack_ptr = _do_super_send(current_bc_idx, method, stack_info["stack"], stack_info["stack_ptr"])  # TODO needs to handle TOS too
+            _do_super_send(current_bc_idx, method, stack_info)
 
         elif bytecode == Bytecodes.return_local:
             return get_tos(stack_info)
@@ -376,10 +424,10 @@ def interpret(method, frame, max_stack_size):
             next_bc_idx = current_bc_idx - method.get_bytecode(current_bc_idx + 1)
             jitdriver.can_enter_jit(
                 current_bc_idx=next_bc_idx,
-                stack_ptr=stack_ptr,
+                stack_ptr=stack_info.stack_ptr,
                 method=method,
                 frame=frame,
-                stack=stack_info["stack"],
+                stack=stack_info.stack,
             )
 
         elif bytecode == Bytecodes.jump2:
@@ -440,10 +488,10 @@ def interpret(method, frame, max_stack_size):
             )
             jitdriver.can_enter_jit(
                 current_bc_idx=next_bc_idx,
-                stack_ptr=stack_ptr,
+                stack_ptr=stack_info.stack_ptr,
                 method=method,
                 frame=frame,
-                stack=stack_info["stack"],
+                stack=stack_info.stack,
             )
 
         elif bytecode == Bytecodes.q_super_send_1:
