@@ -6,6 +6,7 @@ from som.interpreter.ast.frame import (
     FRAME_AND_INNER_RCVR_IDX,
     get_inner_as_context,
 )
+from som.interpreter.ast.nodes.dispatch import GenericDispatchNode
 
 from som.interpreter.bc.bytecodes import bytecode_length, Bytecodes
 from som.interpreter.bc.frame import (
@@ -216,67 +217,57 @@ def interpret(method, frame, max_stack_size):
             receiver = get_tos(stack_info)
 
             layout = receiver.get_object_layout(current_universe)
-            invokable = _lookup(layout, signature, method, current_bc_idx)
-            if invokable is not None:
-                set_tos(invokable.invoke_1(receiver), stack_info)
-            elif not layout.is_latest:
+            dispatch_node = _lookup(layout, signature, method, current_bc_idx, current_universe)
+
+            if isinstance(layout, GenericDispatchNode) and not layout.is_latest:
                 _update_object_and_invalidate_old_caches(
                     receiver, method, current_bc_idx, current_universe
                 )
-                next_bc_idx = current_bc_idx
-            else:
-                send_does_not_understand(receiver, signature, stack_info)
+
+            set_tos(dispatch_node.dispatch_1(receiver), stack_info)
 
         elif bytecode == Bytecodes.send_2:
             signature = method.get_constant(current_bc_idx)
             receiver = read_stack_elem(1, stack_info)
 
             layout = receiver.get_object_layout(current_universe)
-            invokable = _lookup(layout, signature, method, current_bc_idx)
-            if invokable is not None:
-                arg = pop_1(stack_info)
-                set_tos(invokable.invoke_2(receiver, arg), stack_info)
-            elif not layout.is_latest:
+            dispatch_node = _lookup(layout, signature, method, current_bc_idx, current_universe)
+
+            if isinstance(layout, GenericDispatchNode) and not layout.is_latest:
                 _update_object_and_invalidate_old_caches(
                     receiver, method, current_bc_idx, current_universe
                 )
-                next_bc_idx = current_bc_idx
-            else:
-                send_does_not_understand(receiver, signature, stack_info)
+
+            arg = pop_1(stack_info)
+            set_tos(dispatch_node.dispatch_2(receiver, arg), stack_info)
 
         elif bytecode == Bytecodes.send_3:
             signature = method.get_constant(current_bc_idx)
-            receiver = read_stack_elem(2)
+            receiver = read_stack_elem(2, stack_info)
 
             layout = receiver.get_object_layout(current_universe)
-            invokable = _lookup(layout, signature, method, current_bc_idx)
-            if invokable is not None:
-                arg2, arg1 = pop_2(stack_info)
+            dispatch_node = _lookup(
+                layout, signature, method, current_bc_idx, current_universe
+            )
 
-                set_tos(invokable.invoke_3(receiver, arg1, arg2), stack_info)
-            elif not layout.is_latest:
-                _update_object_and_invalidate_old_caches(
-                    receiver, method, current_bc_idx, current_universe
-                )
-                next_bc_idx = current_bc_idx
-            else:
-                send_does_not_understand(receiver, signature, stack_info)
+            arg2, arg1 = pop_2(stack_info)
+            set_tos(dispatch_node.dispatch_3(receiver, arg1, arg2), stack_info)
 
         elif bytecode == Bytecodes.send_n:
             signature = method.get_constant(current_bc_idx)
             receiver = read_stack_elem(signature.get_number_of_signature_arguments() - 1, stack_info)
 
             layout = receiver.get_object_layout(current_universe)
-            invokable = _lookup(layout, signature, method, current_bc_idx)
-            if invokable is not None:
-                stack_ptr = invokable.invoke_n(stack_info)
-            elif not layout.is_latest:
+            dispatch_node = _lookup(
+                layout, signature, method, current_bc_idx, current_universe
+            )
+
+            if isinstance(layout, GenericDispatchNode) and not layout.is_latest:
                 _update_object_and_invalidate_old_caches(
                     receiver, method, current_bc_idx, current_universe
                 )
-                next_bc_idx = current_bc_idx
-            else:
-                send_does_not_understand(receiver, signature, stack_info)
+
+            stack_ptr = dispatch_node.dispatch_n_bc(stack_info, receiver)
 
         elif bytecode == Bytecodes.super_send:
             stack_ptr = _do_super_send(current_bc_idx, method, stack_info["stack"], stack_info["stack_ptr"])  # TODO needs to handle TOS too
@@ -469,7 +460,7 @@ def interpret(method, frame, max_stack_size):
             arg2, arg1 = pop_2(stack_info)
             set_tos(invokable.dispatch_3(get_tos(stack_info), arg1, arg2), stack_info)
 
-        elif bytecode == Bytecodes.q_super_send_n:  # TODO code will break without changing the implem of these dispatch functions
+        elif bytecode == Bytecodes.q_super_send_n:
             invokable = method.get_inline_cache(current_bc_idx)
             stack_ptr = invokable.dispatch_n(stack_info)
 
