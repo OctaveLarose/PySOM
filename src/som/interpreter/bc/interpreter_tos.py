@@ -315,7 +315,7 @@ def interpret(method, frame, max_stack_size):
                     receiver, method, current_bc_idx, current_universe
                 )
 
-            stack_ptr = dispatch_node.dispatch_n_bc(stack_info, receiver)
+            dispatch_node.dispatch_n_bc(stack_info, receiver)
 
         elif bytecode == Bytecodes.super_send:
             _do_super_send(current_bc_idx, method, stack_info)
@@ -386,7 +386,7 @@ def interpret(method, frame, max_stack_size):
             ctx_level = method.get_bytecode(current_bc_idx + 2)
             self_obj = get_self(frame, ctx_level)
 
-            stack_ptr += 1
+            stack_info.stack_ptr += 1
             set_tos(self_obj.inc_field(field_idx), stack_info)
 
         elif bytecode == Bytecodes.jump:
@@ -510,7 +510,7 @@ def interpret(method, frame, max_stack_size):
 
         elif bytecode == Bytecodes.q_super_send_n:
             invokable = method.get_inline_cache(current_bc_idx)
-            stack_ptr = invokable.dispatch_n(stack_info)
+            invokable.dispatch_n(stack_info)
 
         elif bytecode == Bytecodes.push_local:
             method.patch_variable_access(current_bc_idx)
