@@ -1,4 +1,5 @@
 from rlib import jit
+from som.interpreter.bc.stack_ops import pop_1, get_tos
 
 from som.primitives.integer_primitives import IntegerPrimitivesBase as _Base
 from som.vmobjects.double import Double
@@ -90,22 +91,16 @@ def _to_do(rcvr, limit, block):
     return rcvr
 
 
-def _to_by_do(_ivkbl, stack, stack_ptr):
-    block = stack[stack_ptr]
-    stack[stack_ptr] = None
-    stack_ptr -= 1
+def _to_by_do(_ivkbl, stack_info):
+    block = pop_1(stack_info) # it's also None'd in the og
 
-    by_increment = stack[stack_ptr]
-    stack[stack_ptr] = None
-    stack_ptr -= 1
+    by_increment = pop_1(stack_info)
 
-    limit = stack[stack_ptr]
-    stack[stack_ptr] = None
-    stack_ptr -= 1
+    limit = pop_1(stack_info)
 
     block_method = block.get_method()
 
-    self = stack[stack_ptr]
+    self = get_tos(stack_info)
 
     i = self.get_embedded_integer()
     if isinstance(limit, Double):
@@ -124,8 +119,6 @@ def _to_by_do(_ivkbl, stack, stack_ptr):
             block,
             block_method,
         )
-
-    return stack_ptr
 
 
 def _down_to_do_int(i, by_increment, bottom, block, block_method):

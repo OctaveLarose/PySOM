@@ -129,13 +129,12 @@ def _empty_invoke_ast(ivkbl, _rcvr, _args):
     )
 
 
-def _empty_invoke_bc(ivkbl, _stack, stack_ptr):
+def _empty_invoke_bc(ivkbl, stack_info):
     """Write a warning to the screen"""
     print(
         "Warning: undefined primitive #%s called"
         % ivkbl.get_signature().get_embedded_string()
     )
-    return stack_ptr
 
 
 if is_ast_interpreter():

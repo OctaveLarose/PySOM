@@ -5,7 +5,7 @@ from som.vm.globals import nilObject, trueObject, falseObject
 from som.vmobjects.primitive import Primitive, BinaryPrimitive
 
 
-def _restart(ivkbl, rcvr, args):
+def _restart(ivkbl, stack_info):
     raise RuntimeError(
         "Restart primitive is not supported, #whileTrue: "
         "and #whileTrue: are intrisified so that #restart "

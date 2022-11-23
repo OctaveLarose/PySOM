@@ -76,29 +76,29 @@ build-and-test-jit-bc:
         put ${PROJECT_FOLDER}/som-bc-jit.lz4 incoming/${CI_PIPELINE_ID}/
       EOF
 
-build-and-test-jit-ast:
-  stage: build-test
-  tags: [yuria3]
-  script:
-    # Setup
-    - export PROJECT_FOLDER=$(pwd)
-    - export PYTHONPATH=$PYTHONPATH:$PYPY_DIR:src
-    - export RPYTHON=$PYPY_DIR/rpython/bin/rpython
-    - export PATH=$PATH:/home/gitlab-runner/.local/pypy2.7-v7.3.5-linux64/bin
-    - export SOM_INTERP=AST
-    
-    # JIT Compiled Version
-    - $RPYTHON --batch -Ojit src/main_rpython.py
-    - ./som-ast-jit -cp Smalltalk TestSuite/TestHarness.som
-
-    # Package and Upload
-    - lz4 som-ast-jit som-ast-jit.lz4
-    
-    - |
-      sftp tmp-artifacts << EOF
-        -mkdir incoming/${CI_PIPELINE_ID}/
-        put ${PROJECT_FOLDER}/som-ast-jit.lz4 incoming/${CI_PIPELINE_ID}/
-      EOF
+#build-and-test-jit-ast:
+#  stage: build-test
+#  tags: [yuria3]
+#  script:
+#    # Setup
+#    - export PROJECT_FOLDER=$(pwd)
+#    - export PYTHONPATH=$PYTHONPATH:$PYPY_DIR:src
+#    - export RPYTHON=$PYPY_DIR/rpython/bin/rpython
+#    - export PATH=$PATH:/home/gitlab-runner/.local/pypy2.7-v7.3.5-linux64/bin
+#    - export SOM_INTERP=AST
+#
+#    # JIT Compiled Version
+#    - $RPYTHON --batch -Ojit src/main_rpython.py
+#    - ./som-ast-jit -cp Smalltalk TestSuite/TestHarness.som
+#
+#    # Package and Upload
+#    - lz4 som-ast-jit som-ast-jit.lz4
+#
+#    - |
+#      sftp tmp-artifacts << EOF
+#        -mkdir incoming/${CI_PIPELINE_ID}/
+#        put ${PROJECT_FOLDER}/som-ast-jit.lz4 incoming/${CI_PIPELINE_ID}/
+#      EOF
 
 benchmark-y1:
   stage: benchmark

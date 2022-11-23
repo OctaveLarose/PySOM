@@ -510,7 +510,7 @@ def interpret(method, frame, max_stack_size):
 
         elif bytecode == Bytecodes.q_super_send_n:
             invokable = method.get_inline_cache(current_bc_idx)
-            invokable.dispatch_n(stack_info)
+            invokable.dispatch_n_bc(stack_info, None)
 
         elif bytecode == Bytecodes.push_local:
             method.patch_variable_access(current_bc_idx)
