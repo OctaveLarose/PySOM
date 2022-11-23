@@ -89,10 +89,9 @@ def interpret(method, frame, max_stack_size):
     while True:
         jitdriver.jit_merge_point(
             current_bc_idx=current_bc_idx,
-            stack_ptr=stack_info.stack_ptr,
+            stack_info=stack_info,
             method=method,
-            frame=frame,
-            stack=stack_info.stack,
+            frame=frame
         )
 
         bytecode = method.get_bytecode(current_bc_idx)
@@ -103,7 +102,7 @@ def interpret(method, frame, max_stack_size):
         # Compute the next bytecode index
         next_bc_idx = current_bc_idx + bc_length
 
-        promote(stack_info.stack_ptr)
+        promote(stack_info)
 
         # Handle the current bytecode
         if bytecode == Bytecodes.halt:
@@ -386,8 +385,7 @@ def interpret(method, frame, max_stack_size):
             ctx_level = method.get_bytecode(current_bc_idx + 2)
             self_obj = get_self(frame, ctx_level)
 
-            stack_info.stack_ptr += 1
-            set_tos(self_obj.inc_field(field_idx), stack_info)
+            push_1(self_obj.inc_field(field_idx), stack_info)
 
         elif bytecode == Bytecodes.jump:
             next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
@@ -424,10 +422,9 @@ def interpret(method, frame, max_stack_size):
             next_bc_idx = current_bc_idx - method.get_bytecode(current_bc_idx + 1)
             jitdriver.can_enter_jit(
                 current_bc_idx=next_bc_idx,
-                stack_ptr=stack_info.stack_ptr,
+                stack_info=stack_info,
                 method=method,
                 frame=frame,
-                stack=stack_info.stack,
             )
 
         elif bytecode == Bytecodes.jump2:
@@ -488,10 +485,9 @@ def interpret(method, frame, max_stack_size):
             )
             jitdriver.can_enter_jit(
                 current_bc_idx=next_bc_idx,
-                stack_ptr=stack_info.stack_ptr,
+                stack_info=stack_info,
                 method=method,
-                frame=frame,
-                stack=stack_info.stack,
+                frame=frame
             )
 
         elif bytecode == Bytecodes.q_super_send_1:
@@ -552,7 +548,7 @@ def send_does_not_understand(receiver, selector, stack_info):
 jitdriver = jit.JitDriver(
     name="Interpreter with TOS caching",
     greens=["current_bc_idx", "method"],
-    reds=["stack_ptr", "frame", "stack"],
+    reds=["stack_info", "frame"],
     # virtualizables=['frame'],
     get_printable_location=get_printable_location,
     # the next line is a workaround around a likely bug in RPython
