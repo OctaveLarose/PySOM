@@ -8,6 +8,7 @@ from som.interpreter.ast.frame import (
 from som.interpreter.bc.frame import (
     create_frame,
 )
+from som.interpreter.bc.stack_ops import StackInfo, push_1
 from som.vmobjects.integer import Integer
 
 _MIN_FRAME_SIZE = 1 + 1  # Inner, Receiver
@@ -15,14 +16,16 @@ _MIN_FRAME_SIZE = 1 + 1  # Inner, Receiver
 
 def test_call_argument_handling_all_frame():
     num_args = 4
-    prev_stack = [Integer(i) for i in range(num_args)]
+
+    stack_info = StackInfo(num_args)
+    for i in range(num_args):
+        push_1(Integer(i), stack_info)
 
     callee_frame = create_frame(
         [False] * (num_args - 1),
         _MIN_FRAME_SIZE + num_args,
         0,
-        prev_stack,
-        num_args - 1,
+        stack_info,
         num_args,
     )
 
@@ -37,7 +40,10 @@ def test_call_argument_handling_all_frame():
 
 def test_call_argument_handling_mix_frame_and_inner():
     num_args = 6
-    prev_stack = [Integer(i) for i in range(num_args)]
+
+    stack_info = StackInfo(num_args)
+    for i in range(num_args):
+        push_1(Integer(i), stack_info)
 
     arg_access_inner = [True, False, True, False, True]
     arg_access_inner.reverse()
@@ -45,8 +51,7 @@ def test_call_argument_handling_mix_frame_and_inner():
         arg_access_inner,
         _MIN_FRAME_SIZE + num_args,
         2 + 3,
-        prev_stack,
-        num_args - 1,
+        stack_info,
         num_args,
     )
 
@@ -79,7 +84,9 @@ def test_call_argument_handling_mix_frame_and_inner():
 def test_call_argument_handling_first_frame_then_inner():
     num_args = 6
 
-    prev_stack = [Integer(i) for i in range(num_args)]
+    stack_info = StackInfo(num_args)
+    for i in range(num_args):
+        push_1(Integer(i), stack_info)
 
     arg_access_inner = [False, False, False, True, True]
     arg_access_inner.reverse()
@@ -87,8 +94,7 @@ def test_call_argument_handling_first_frame_then_inner():
         arg_access_inner,
         _MIN_FRAME_SIZE + num_args,
         2 + 3,
-        prev_stack,
-        num_args - 1,
+        stack_info,
         num_args,
     )
 
