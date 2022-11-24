@@ -101,7 +101,7 @@ def interpret(method, frame, max_stack_size):
         # Compute the next bytecode index
         next_bc_idx = current_bc_idx + bc_length
 
-        promote(execution_ctx)
+        promote(execution_ctx.stack_ptr)
 
         # Handle the current bytecode
         if bytecode == Bytecodes.halt:
