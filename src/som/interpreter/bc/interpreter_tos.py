@@ -102,6 +102,7 @@ def interpret(method, frame, max_stack_size):
         next_bc_idx = current_bc_idx + bc_length
 
         promote(execution_ctx.stack_ptr)
+        promote(execution_ctx.is_tos_reg_free)
 
         # Handle the current bytecode
         if bytecode == Bytecodes.halt:
