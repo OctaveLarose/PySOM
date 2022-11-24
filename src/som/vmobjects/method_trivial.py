@@ -7,7 +7,6 @@ from som.compiler.bc.bytecode_generator import (
 from som.interp_type import is_ast_interpreter
 from som.interpreter.ast.frame import FRAME_AND_INNER_RCVR_IDX
 from som.interpreter.bc.frame import stack_pop_old_arguments_and_push_result
-from som.interpreter.bc.stack_ops import read_stack_elem
 from som.interpreter.send import lookup_and_send_2
 
 from som.vmobjects.method import AbstractMethod
@@ -61,9 +60,9 @@ class LiteralReturn(AbstractTrivialMethod):
     def invoke_3(self, _rcvr, _arg1, _arg2):
         return self._value
 
-    def invoke_n(self, stack_info):
+    def invoke_n(self, execution_ctx):
         return stack_pop_old_arguments_and_push_result(
-            stack_info,
+            execution_ctx,
             self._signature.get_number_of_signature_arguments(),
             self._value,
         )
@@ -112,12 +111,12 @@ class GlobalRead(AbstractTrivialMethod):
     def invoke_3(self, rcvr, _arg1, _arg2):
         return self.invoke_1(rcvr)
 
-    def invoke_n(self, stack_info):
+    def invoke_n(self, execution_ctx):
         num_args = self._signature.get_number_of_signature_arguments()
-        rcvr = read_stack_elem(num_args - 1, stack_info)
+        rcvr = execution_ctx.read_stack_elem(num_args - 1)
         value = self.invoke_1(rcvr)
         return stack_pop_old_arguments_and_push_result(
-            stack_info,
+            execution_ctx,
             num_args,
             value,
         )
@@ -156,12 +155,12 @@ class FieldRead(AbstractTrivialMethod):
     def invoke_3(self, rcvr, _arg1, _arg2):
         return self.invoke_1(rcvr)
 
-    def invoke_n(self, stack_info):
+    def invoke_n(self, execution_ctx):
         num_args = self._signature.get_number_of_signature_arguments()
-        rcvr = read_stack_elem(num_args - 1, stack_info)
+        rcvr = execution_ctx.read_stack_elem(num_args - 1)
         value = self.invoke_1(rcvr)
         return stack_pop_old_arguments_and_push_result(
-            stack_info,
+            execution_ctx,
             num_args,
             value,
         )
@@ -201,13 +200,13 @@ class FieldWrite(AbstractTrivialMethod):
             return self.invoke_2(rcvr, arg1)
         return self.invoke_2(rcvr, arg2)
 
-    def invoke_n(self, stack_info):
+    def invoke_n(self, execution_ctx):
         num_args = self._signature.get_number_of_signature_arguments()
-        rcvr = read_stack_elem(num_args - 1, stack_info)
-        arg = read_stack_elem(num_args - self._arg_idx, stack_info)
+        rcvr = execution_ctx.read_stack_elem(num_args - 1)
+        arg = execution_ctx.read_stack_elem(num_args - self._arg_idx)
         self.invoke_2(rcvr, arg)
         return stack_pop_old_arguments_and_push_result(
-            stack_info,
+            execution_ctx,
             num_args,
             rcvr,
         )
