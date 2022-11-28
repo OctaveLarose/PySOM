@@ -89,6 +89,7 @@ def interpret(method, frame, max_stack_size):
         jitdriver.jit_merge_point(
             current_bc_idx=current_bc_idx,
             execution_ctx=execution_ctx,
+            stack_ptr=execution_ctx.stack_ptr,
             method=method,
             frame=frame
         )
@@ -100,9 +101,6 @@ def interpret(method, frame, max_stack_size):
 
         # Compute the next bytecode index
         next_bc_idx = current_bc_idx + bc_length
-
-        promote(execution_ctx.stack_ptr)
-        promote(execution_ctx.is_tos_reg_free)
 
         # Handle the current bytecode
         if bytecode == Bytecodes.halt:
@@ -423,6 +421,7 @@ def interpret(method, frame, max_stack_size):
             jitdriver.can_enter_jit(
                 current_bc_idx=next_bc_idx,
                 execution_ctx=execution_ctx,
+                stack_ptr=execution_ctx.stack_ptr,
                 method=method,
                 frame=frame,
             )
@@ -486,6 +485,7 @@ def interpret(method, frame, max_stack_size):
             jitdriver.can_enter_jit(
                 current_bc_idx=next_bc_idx,
                 execution_ctx=execution_ctx,
+                stack_ptr=execution_ctx.stack_ptr,
                 method=method,
                 frame=frame
             )
@@ -547,7 +547,7 @@ def send_does_not_understand(receiver, selector, execution_ctx):
 
 jitdriver = jit.JitDriver(
     name="Interpreter with TOS caching",
-    greens=["current_bc_idx", "method"],
+    greens=["current_bc_idx", "stack_ptr", "method"],
     reds=["execution_ctx", "frame"],
     # virtualizables=['frame'],
     get_printable_location=get_printable_location,
@@ -558,5 +558,5 @@ jitdriver = jit.JitDriver(
     # the next line says that calls involving this jitdriver should always be
     # inlined once (which means that things like Integer>>< will be inlined
     # into a while loop again, when enabling this drivers).
-    should_unroll_one_iteration=lambda current_bc_idx, method: True,
+    should_unroll_one_iteration=lambda current_bc_idx, stack_ptr, method: True,
 )

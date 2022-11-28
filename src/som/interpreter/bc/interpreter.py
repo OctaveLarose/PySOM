@@ -746,7 +746,7 @@ def send_does_not_understand(receiver, selector, stack, stack_ptr):
     return stack_ptr
 
 
-def get_printable_location(bytecode_index, method):
+def get_printable_location(bytecode_index, stack_ptr, method):
     from som.vmobjects.method_bc import BcAbstractMethod
 
     assert isinstance(method, BcAbstractMethod)
@@ -760,8 +760,8 @@ def get_printable_location(bytecode_index, method):
 
 jitdriver = jit.JitDriver(
     name="Interpreter",
-    greens=["current_bc_idx", "method"],
-    reds=["stack_ptr", "frame", "stack"],
+    greens=["current_bc_idx", "stack_ptr", "method"],
+    reds=["frame", "stack"],
     # virtualizables=['frame'],
     get_printable_location=get_printable_location,
     # the next line is a workaround around a likely bug in RPython
@@ -771,7 +771,7 @@ jitdriver = jit.JitDriver(
     # the next line says that calls involving this jitdriver should always be
     # inlined once (which means that things like Integer>>< will be inlined
     # into a while loop again, when enabling this drivers).
-    should_unroll_one_iteration=lambda current_bc_idx, method: True,
+    should_unroll_one_iteration=lambda current_bc_idx, stack_ptr, method: True,
 )
 
 
