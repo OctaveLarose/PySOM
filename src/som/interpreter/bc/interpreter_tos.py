@@ -15,7 +15,7 @@ from som.interpreter.bc.frame import (
 )
 from som.interpreter.bc.base_interpreter import _unknown_bytecode, get_printable_location, _not_yet_implemented, \
     _update_object_and_invalidate_old_caches, get_self, _lookup, _do_return_non_local
-from som.interpreter.bc.stack_ops import MethodExecutionContext
+from som.interpreter.bc.method_execution_context import MethodExecutionContext
 from som.interpreter.send import lookup_and_send_2, lookup_and_send_3
 from som.vm.globals import nilObject, trueObject, falseObject
 from som.vmobjects.array import Array

@@ -8,7 +8,7 @@ from som.interpreter.ast.frame import (
 from som.interpreter.bc.frame import (
     create_frame,
 )
-from som.interpreter.bc.stack_ops import MethodExecutionContext
+from som.interpreter.bc.method_execution_context import MethodExecutionContext
 from som.vmobjects.integer import Integer
 
 _MIN_FRAME_SIZE = 1 + 1  # Inner, Receiver

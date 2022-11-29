@@ -1,7 +1,7 @@
 from rlib import jit
 from som.interpreter.bc.interpreter import Interpreter
 from som.interpreter.bc.interpreter_tos import InterpreterTOS1
-from som.interpreter.bc.stack_ops import MethodExecutionContext
+from som.interpreter.bc.method_execution_context import MethodExecutionContext
 from som.interpreter.bc.base_interpreter import get_printable_location
 
 
