@@ -44,7 +44,7 @@ def create_frame(
     frame = [_erase_obj(nilObject)] * size_frame
     make_sure_not_resized(frame)
 
-    receiver = execution_ctx.read_stack_elem(num_args - 1)
+    receiver = execution_ctx.read_stack_elem_tos1(num_args - 1)
     assert num_args - 1 == len(arg_inner_access_reversed)  # num_args without rcvr
 
     if size_inner > 0:
@@ -118,7 +118,7 @@ def _set_arguments_without_inner(
     frame_i = _FRAME_AND_INNER_FIRST_ARG
 
     while arg_i >= 0:
-        frame[frame_i] = _erase_obj(execution_ctx.read_stack_elem(arg_i))
+        frame[frame_i] = _erase_obj(execution_ctx.read_stack_elem_tos1(arg_i))
         frame_i += 1
         arg_i -= 1
 
@@ -136,7 +136,7 @@ def _set_arguments_with_inner(
     inner_i = _FRAME_AND_INNER_FIRST_ARG
 
     while arg_i >= 0:
-        arg_val = execution_ctx.read_stack_elem(arg_i)
+        arg_val = execution_ctx.read_stack_elem_tos1(arg_i)
         if arg_inner_access_reversed[arg_i]:
             inner[inner_i] = arg_val
             inner_i += 1
@@ -149,9 +149,9 @@ def _set_arguments_with_inner(
 @jit.unroll_safe
 def stack_pop_old_arguments_and_push_result(execution_ctx, num_args, result):
     for _ in range(num_args):
-        execution_ctx.set_tos(None)
-        execution_ctx.pop_1()
-    execution_ctx.push_1(result)
+        execution_ctx.set_tos_tos1(None)
+        execution_ctx.pop_1_tos1()
+    execution_ctx.push_1_tos1(result)
 
 
 @jit.unroll_safe
