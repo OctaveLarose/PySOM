@@ -148,10 +148,19 @@ def _set_arguments_with_inner(
 
 @jit.unroll_safe
 def stack_pop_old_arguments_and_push_result(execution_ctx, num_args, result):
-    for _ in range(num_args):
-        execution_ctx.set_tos_tos1(None)
-        execution_ctx.pop_1_tos1()
-    execution_ctx.push_1_tos1(result)
+    if execution_ctx.no_tos_caching:
+        for _ in range(num_args):
+            execution_ctx.stack[execution_ctx.stack_ptr] = None
+            execution_ctx.stack_ptr -= 1
+        execution_ctx.stack_ptr += 1
+        execution_ctx.stack[execution_ctx.stack_ptr] = result
+    else:
+        for _ in range(num_args):
+            execution_ctx.set_tos_tos1(None)
+            execution_ctx.pop_1_tos1()
+        execution_ctx.push_1_tos1(result)
+
+    return execution_ctx.stack_ptr
 
 
 @jit.unroll_safe

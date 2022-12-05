@@ -37,7 +37,7 @@ from som.interpreter.bc.frame import (
     stack_pop_old_arguments_and_push_result,
     create_frame_3,
 )
-from som.interpreter.bc.interpreter import interpret
+from som.interpreter.bc.interpreter_tos import interpret
 from som.interpreter.control_flow import ReturnException
 from som.vmobjects.abstract_object import AbstractObject
 from som.vmobjects.method import AbstractMethod

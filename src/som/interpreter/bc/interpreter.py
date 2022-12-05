@@ -100,7 +100,7 @@ class Interpreter:
     def interpret(self):
         from som.vm.current import current_universe
 
-        execution_ctx = MethodExecutionContext(self.max_stack_size)
+        execution_ctx = MethodExecutionContext(self.max_stack_size, no_tos_caching=True)
 
         while True:
             self.jitdriver.jit_merge_point(
@@ -496,7 +496,7 @@ class Interpreter:
         elif bytecode == Bytecodes.inc_field_push:
             field_idx = self.method.get_bytecode(self.current_bc_idx + 1)
             ctx_level = self.method.get_bytecode(self.current_bc_idx + 2)
-            self_obj = self.get_self(self.frame, ctx_level)
+            self_obj = get_self(self.frame, ctx_level)
 
             execution_ctx.stack_ptr += 1
             stack[execution_ctx.stack_ptr] = self_obj.inc_field(field_idx)

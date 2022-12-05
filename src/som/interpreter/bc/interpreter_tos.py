@@ -575,6 +575,7 @@ def send_does_not_understand(receiver, selector, execution_ctx):
         i -= 1
 
     execution_ctx.set_tos_tos1(lookup_and_send_3(receiver, selector, arguments_array, "doesNotUnderstand:arguments:"))
+    return execution_ctx.stack_ptr
 
 
 def interpret(method, frame, max_stack_size):
