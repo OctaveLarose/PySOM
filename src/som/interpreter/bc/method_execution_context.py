@@ -5,7 +5,7 @@ from rlib.jit import we_are_jitted
 class MethodExecutionContext:
     stack_ptr = -1
     tos_reg = None
-    is_tos_reg_in_use = True
+    is_tos_reg_in_use = False
 
     def __init__(self, max_stack_size):
         self.stack = [None] * max_stack_size
