@@ -177,6 +177,8 @@ def stack_pop_old_arguments_and_push_result(execution_ctx, num_args, result):
             execution_ctx.pop_1()
         execution_ctx.push_1(result)
 
+    return execution_ctx.stack_ptr # mostly irrelevant, exists to make rpython happy by returning an int.
+
 @jit.unroll_safe
 def get_block_at(frame, ctx_level):
     assert ctx_level > 0

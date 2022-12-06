@@ -231,7 +231,7 @@ class BcMethod(BcAbstractMethod):
         )
 
         result = interpret(self, new_frame, self._maximum_number_of_stack_elements)
-        stack_pop_old_arguments_and_push_result(
+        return stack_pop_old_arguments_and_push_result(
             stack_info, self._number_of_arguments, result
         )
 

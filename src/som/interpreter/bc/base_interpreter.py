@@ -23,23 +23,6 @@ def _do_return_non_local(result, frame, ctx_level):
 
     raise ReturnException(result, block.get_on_stack_marker())
 
-
-def _invoke_invokable_slow_path(invokable, num_args, receiver, execution_ctx):
-    if num_args == 1:
-        execution_ctx.set_tos(invokable.invoke_1(receiver))
-
-    elif num_args == 2:
-        arg = execution_ctx.pop_1()
-        execution_ctx.set_tos(invokable.invoke_2(receiver, arg))
-
-    elif num_args == 3:
-        arg2, arg1 = execution_ctx.pop_2()
-        execution_ctx.set_tos(invokable.invoke_3(receiver, arg1, arg2))
-
-    else:
-        invokable.invoke_n(execution_ctx)
-
-
 def _unknown_bytecode(bytecode, bytecode_idx, method):
     from som.compiler.bc.disassembler import dump_method
 

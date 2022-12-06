@@ -7,8 +7,7 @@ from som.interpreter.bc.bytecodes import bytecode_length, Bytecodes, bytecode_as
 from som.interpreter.bc.frame import get_block_at, get_self_dynamically
 from som.interpreter.bc.method_execution_context import MethodExecutionContext
 from som.interpreter.bc.base_interpreter import get_printable_location, get_self, _lookup, \
-    _update_object_and_invalidate_old_caches, _do_return_non_local, _not_yet_implemented, _unknown_bytecode, \
-    _invoke_invokable_slow_path
+    _update_object_and_invalidate_old_caches, _do_return_non_local, _not_yet_implemented, _unknown_bytecode
 from som.interpreter.send import lookup_and_send_2, lookup_and_send_3
 from som.vm.globals import nilObject, trueObject, falseObject
 from som.vmobjects.array import Array
