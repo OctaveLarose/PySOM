@@ -12,8 +12,11 @@ class MethodExecutionContext:
         self.no_tos_caching = no_tos_caching
 
     def push_1(self, val):
-        self.tos_reg = val
-        self.is_tos_reg_in_use = True
+        self.stack_ptr += 1
+        self.stack[self.stack_ptr] = val
+        # TODO modified code to make base interpreter function in isolation
+        # self.tos_reg = val
+        # self.is_tos_reg_in_use = True
 
 
     def push_1_tos1(self, val):

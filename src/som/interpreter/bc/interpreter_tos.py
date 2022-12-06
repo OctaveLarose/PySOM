@@ -542,7 +542,7 @@ class InterpreterTOS1:
                 invokable, num_args, receiver, execution_ctx
             )
         else:
-            send_does_not_understand(
+            send_does_not_understand_tos(
                 receiver, invokable.get_signature(), execution_ctx
             )
 
@@ -562,7 +562,7 @@ class InterpreterTOS1:
             invokable.invoke_n(execution_ctx)
 
 
-def send_does_not_understand(receiver, selector, execution_ctx):
+def send_does_not_understand_tos(receiver, selector, execution_ctx):
     # ignore self
     number_of_arguments = selector.get_number_of_signature_arguments() - 1
     arguments_array = Array.from_size(number_of_arguments)

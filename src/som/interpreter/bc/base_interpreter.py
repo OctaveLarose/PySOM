@@ -24,32 +24,20 @@ def _do_return_non_local(result, frame, ctx_level):
     raise ReturnException(result, block.get_on_stack_marker())
 
 
-def _invoke_invokable_slow_path(invokable, num_args, receiver, stack, stack_ptr):
+def _invoke_invokable_slow_path(invokable, num_args, receiver, execution_ctx):
     if num_args == 1:
-        stack[stack_ptr] = invokable.invoke_1(receiver)
+        execution_ctx.set_tos(invokable.invoke_1(receiver))
 
     elif num_args == 2:
-        arg = stack[stack_ptr]
-        if we_are_jitted():
-            stack[stack_ptr] = None
-        stack_ptr -= 1
-        stack[stack_ptr] = invokable.invoke_2(receiver, arg)
+        arg = execution_ctx.pop_1()
+        execution_ctx.set_tos(invokable.invoke_2(receiver, arg))
 
     elif num_args == 3:
-        arg2 = stack[stack_ptr]
-        arg1 = stack[stack_ptr - 1]
-
-        if we_are_jitted():
-            stack[stack_ptr] = None
-            stack[stack_ptr - 1] = None
-
-        stack_ptr -= 2
-
-        stack[stack_ptr] = invokable.invoke_3(receiver, arg1, arg2)
+        arg2, arg1 = execution_ctx.pop_2()
+        execution_ctx.set_tos(invokable.invoke_3(receiver, arg1, arg2))
 
     else:
-        stack_ptr = invokable.invoke_n(stack, stack_ptr)
-    return stack_ptr
+        invokable.invoke_n(execution_ctx)
 
 
 def _unknown_bytecode(bytecode, bytecode_idx, method):
