@@ -12,12 +12,8 @@ class MethodExecutionContext:
         self.no_tos_caching = no_tos_caching
 
     def push_1(self, val):
-        self.stack_ptr += 1
-        self.stack[self.stack_ptr] = val
-        # TODO modified code to make base interpreter function in isolation
-        # self.tos_reg = val
-        # self.is_tos_reg_in_use = True
-
+        self.tos_reg = val
+        self.is_tos_reg_in_use = True
 
     def push_1_tos1(self, val):
         self.stack_ptr += 1
@@ -33,6 +29,7 @@ class MethodExecutionContext:
 
     def pop_1_tos1(self):
         val = self.tos_reg
+        self.tos_reg = None # Just to make it explicit it's gone
         self.is_tos_reg_in_use = False
         return val
 
@@ -52,6 +49,7 @@ class MethodExecutionContext:
         self.stack[self.stack_ptr] = val
 
     def set_tos_tos1(self, val):
+        self.is_tos_reg_in_use = True
         self.tos_reg = val
 
     def read_stack_elem(self, offset):

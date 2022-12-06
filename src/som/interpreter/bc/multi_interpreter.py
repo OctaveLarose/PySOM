@@ -3,7 +3,7 @@ from rlib.jit import promote, we_are_jitted
 from som.interpreter.ast.frame import read_frame, FRAME_AND_INNER_RCVR_IDX, read_inner, get_inner_as_context, \
     write_frame, write_inner
 from som.interpreter.ast.nodes.dispatch import GenericDispatchNode, CachedDispatchNode
-from som.interpreter.bc.bytecodes import bytecode_length, Bytecodes
+from som.interpreter.bc.bytecodes import bytecode_length, Bytecodes, bytecode_as_str
 from som.interpreter.bc.frame import get_block_at, get_self_dynamically
 from som.interpreter.bc.method_execution_context import MethodExecutionContext
 from som.interpreter.bc.base_interpreter import get_printable_location, get_self, _lookup, \
@@ -22,6 +22,10 @@ def interpret(method, frame, max_stack_size):
     execution_ctx = MethodExecutionContext(max_stack_size)
 
     current_bc_idx = 0
+
+    # print(method.get_signature())
+    # if "resolve" in method.get_signature().__str__():
+    #     print("bp")
 
     while True:
         jitdriver.jit_merge_point(
@@ -43,7 +47,8 @@ def interpret(method, frame, max_stack_size):
         promote(execution_ctx.stack_ptr)
 
         if not execution_ctx.is_tos_reg_in_use:
-            stack = execution_ctx.stack
+            assert execution_ctx.tos_reg is None
+            # print "BASE ", bytecode_as_str(bytecode)
 
             if bytecode == Bytecodes.halt:
                 return execution_ctx.get_tos()
@@ -470,6 +475,7 @@ def interpret(method, frame, max_stack_size):
                 _unknown_bytecode(bytecode, current_bc_idx, method)
 
         else:
+            # print "TOS1 ", bytecode_as_str(bytecode)
 
             if bytecode == Bytecodes.halt:
                 return execution_ctx.get_tos_tos1()
@@ -652,7 +658,7 @@ def interpret(method, frame, max_stack_size):
                     )
 
                 arg = execution_ctx.pop_1_tos1()
-                execution_ctx.set_tos_tos1(dispatch_node.dispatch_2(receiver, arg))
+                execution_ctx.set_tos(dispatch_node.dispatch_2(receiver, arg))
 
             elif bytecode == Bytecodes.send_3:
                 signature = method.get_constant(current_bc_idx)
@@ -664,7 +670,7 @@ def interpret(method, frame, max_stack_size):
                 )
 
                 arg2, arg1 = execution_ctx.pop_2_tos1()
-                execution_ctx.set_tos_tos1(dispatch_node.dispatch_3(receiver, arg1, arg2))
+                execution_ctx.set_tos(dispatch_node.dispatch_3(receiver, arg1, arg2))
 
             elif bytecode == Bytecodes.send_n:
                 signature = method.get_constant(current_bc_idx)
@@ -1003,11 +1009,11 @@ def _invoke_invokable_slow_path(invokable, num_args, receiver, execution_ctx):
         execution_ctx.set_tos(invokable.invoke_1(receiver))
 
     elif num_args == 2:
-        arg = execution_ctx.pop_1_tos1()
+        arg = execution_ctx.pop_1()
         execution_ctx.set_tos(invokable.invoke_2(receiver, arg))
 
     elif num_args == 3:
-        arg2, arg1 = execution_ctx.pop_2_tos1()
+        arg2, arg1 = execution_ctx.pop_2()
         execution_ctx.set_tos(invokable.invoke_3(receiver, arg1, arg2))
 
     else:
@@ -1019,11 +1025,11 @@ def _invoke_invokable_slow_path_tos(invokable, num_args, receiver, execution_ctx
 
     elif num_args == 2:
         arg = execution_ctx.pop_1_tos1()
-        execution_ctx.set_tos_tos1(invokable.invoke_2(receiver, arg))
+        execution_ctx.set_tos(invokable.invoke_2(receiver, arg))
 
     elif num_args == 3:
         arg2, arg1 = execution_ctx.pop_2_tos1()
-        execution_ctx.set_tos_tos1(invokable.invoke_3(receiver, arg1, arg2))
+        execution_ctx.set_tos(invokable.invoke_3(receiver, arg1, arg2))
 
     else:
         invokable.invoke_n(execution_ctx)

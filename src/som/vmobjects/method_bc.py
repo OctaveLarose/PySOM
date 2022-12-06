@@ -37,7 +37,7 @@ from som.interpreter.bc.frame import (
     stack_pop_old_arguments_and_push_result,
     create_frame_3,
 )
-from som.interpreter.bc.interpreter_tos import interpret
+from som.interpreter.bc.multi_interpreter import interpret
 from som.interpreter.control_flow import ReturnException
 from som.vmobjects.abstract_object import AbstractObject
 from som.vmobjects.method import AbstractMethod
@@ -231,7 +231,7 @@ class BcMethod(BcAbstractMethod):
         )
 
         result = interpret(self, new_frame, self._maximum_number_of_stack_elements)
-        return stack_pop_old_arguments_and_push_result(
+        stack_pop_old_arguments_and_push_result(
             stack_info, self._number_of_arguments, result
         )
 
