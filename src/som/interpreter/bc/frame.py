@@ -44,7 +44,11 @@ def create_frame(
     frame = [_erase_obj(nilObject)] * size_frame
     make_sure_not_resized(frame)
 
-    receiver = execution_ctx.read_stack_elem_tos1(num_args - 1)
+    if execution_ctx.is_tos_reg_in_use:
+        receiver = execution_ctx.read_stack_elem_tos1(num_args - 1)
+    else:
+        receiver = execution_ctx.read_stack_elem(num_args - 1)
+
     assert num_args - 1 == len(arg_inner_access_reversed)  # num_args without rcvr
 
     if size_inner > 0:
@@ -118,7 +122,13 @@ def _set_arguments_without_inner(
     frame_i = _FRAME_AND_INNER_FIRST_ARG
 
     while arg_i >= 0:
-        frame[frame_i] = _erase_obj(execution_ctx.read_stack_elem_tos1(arg_i))
+        obj = None
+        if execution_ctx.is_tos_reg_in_use:
+            obj = execution_ctx.read_stack_elem_tos1(arg_i)
+        else:
+            obj = execution_ctx.read_stack_elem(arg_i)
+
+        frame[frame_i] = _erase_obj(obj)
         frame_i += 1
         arg_i -= 1
 
@@ -136,7 +146,11 @@ def _set_arguments_with_inner(
     inner_i = _FRAME_AND_INNER_FIRST_ARG
 
     while arg_i >= 0:
-        arg_val = execution_ctx.read_stack_elem_tos1(arg_i)
+        if execution_ctx.is_tos_reg_in_use:
+            arg_val = execution_ctx.read_stack_elem_tos1(arg_i)
+        else:
+            arg_val = execution_ctx.read_stack_elem(arg_i)
+
         if arg_inner_access_reversed[arg_i]:
             inner[inner_i] = arg_val
             inner_i += 1

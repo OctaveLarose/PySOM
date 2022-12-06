@@ -72,9 +72,13 @@ class GenericDispatchNode(_AbstractDispatchNode):
         method = rcvr.get_object_layout(self.universe).lookup_invokable(self._selector)
         if method is not None:
             return method.invoke_n(stack_info)
-        from som.interpreter.bc.interpreter_tos import send_does_not_understand
+        if stack_info.is_tos_reg_in_use:
+            from som.interpreter.bc.interpreter_tos import send_does_not_understand
+            return send_does_not_understand(rcvr, self._selector, stack_info)
+        else:
+            from som.interpreter.bc.interpreter import send_does_not_understand
+            return send_does_not_understand(rcvr, self._selector, stack_info.stack, stack_info.stack_ptr)
 
-        return send_does_not_understand(rcvr, self._selector, stack_info)
 
 
 class CachedDispatchNode(_AbstractDispatchNode):
