@@ -29,7 +29,6 @@ class MethodExecutionContext:
 
     def pop_1_tos1(self):
         val = self.tos_reg
-        self.tos_reg = None # Just to make it explicit it's gone
         self.is_tos_reg_in_use = False
         return val
 

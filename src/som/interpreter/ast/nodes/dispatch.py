@@ -73,10 +73,10 @@ class GenericDispatchNode(_AbstractDispatchNode):
         if method is not None:
             return method.invoke_n(stack_info)
         if stack_info.is_tos_reg_in_use:
-            from som.interpreter.bc.interpreter_tos import send_does_not_understand_tos
+            from som.interpreter.bc.multi_interpreter import send_does_not_understand_tos
             return send_does_not_understand_tos(rcvr, self._selector, stack_info)
         else:
-            from som.interpreter.bc.interpreter import send_does_not_understand
+            from som.interpreter.bc.multi_interpreter import send_does_not_understand
             return send_does_not_understand(rcvr, self._selector, stack_info)
 
 

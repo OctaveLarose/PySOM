@@ -47,7 +47,6 @@ def interpret(method, frame, max_stack_size):
         promote(execution_ctx.stack_ptr)
 
         if not execution_ctx.is_tos_reg_in_use:
-            assert execution_ctx.tos_reg is None
             # print "BASE ", bytecode_as_str(bytecode)
 
             if bytecode == Bytecodes.halt:
@@ -996,11 +995,14 @@ def send_does_not_understand_tos(receiver, selector, execution_ctx):
     # Remove all arguments and put them in the freshly allocated array
     i = number_of_arguments - 1
     while i >= 0:
-        value = execution_ctx.pop_1_tos1()
+        if i == number_of_arguments - 1: # first iteration
+            value = execution_ctx.pop_1_tos1()
+        else:
+            value = execution_ctx.pop_1()
         arguments_array.set_indexable_field(i, value)
         i -= 1
 
-    execution_ctx.set_tos_tos1(lookup_and_send_3(receiver, selector, arguments_array, "doesNotUnderstand:arguments:"))
+    execution_ctx.set_tos(lookup_and_send_3(receiver, selector, arguments_array, "doesNotUnderstand:arguments:"))
     return execution_ctx.stack_ptr
 
 

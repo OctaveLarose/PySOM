@@ -172,13 +172,10 @@ def stack_pop_old_arguments_and_push_result(execution_ctx, num_args, result):
         execution_ctx.set_tos_tos1(None)
         execution_ctx.pop_1_tos1()
 
-        if num_args == 0:
-            execution_ctx.push_1_tos1(result)
-        else:
-            for _ in range(num_args - 1):
-                execution_ctx.set_tos(None)
-                execution_ctx.pop_1()
-            execution_ctx.push_1(result)
+        for _ in range(num_args - 1):
+            execution_ctx.set_tos(None)
+            execution_ctx.pop_1()
+        execution_ctx.push_1(result)
 
 @jit.unroll_safe
 def get_block_at(frame, ctx_level):
