@@ -5,7 +5,8 @@ from som.vm.globals import nilObject, trueObject, falseObject
 from som.vmobjects.primitive import Primitive, BinaryPrimitive
 
 
-def _restart(ivkbl, execution_ctx):
+# Weird arguments to make sure this primitive can be used by both AST and BC interp
+def _restart(ivkbl, _rcvr, _args=None):
     raise RuntimeError(
         "Restart primitive is not supported, #whileTrue: "
         "and #whileTrue: are intrisified so that #restart "
