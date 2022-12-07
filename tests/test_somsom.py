@@ -42,6 +42,6 @@ def test_somsom(test_name):
     current_universe.interpret(args)
 
     assert current_universe.last_exit_code() == 0
-
+    # TODO check output better, currently this always succeeds
 
 from som.vm.current import current_universe
