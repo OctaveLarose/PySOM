@@ -68,8 +68,11 @@ class _BcPrimitive(_AbstractPrimitive):
         _AbstractPrimitive.__init__(self, signature_string, is_empty)
         self._prim_fn = prim_fn
 
-    def invoke_n(self, _stack_info):
-        return 42 # TODO this is very dumb but rpython complains otherwise and this does not break any tests somehow
+    def invoke_n(self, execution_ctx):
+        prim_fn = self._prim_fn
+        prim_ret = prim_fn(self, execution_ctx)
+        return prim_ret if prim_ret is not None else 42 # TODO fix this...
+
 
     def get_number_of_signature_arguments(self):
         return self._signature.get_number_of_signature_arguments()
@@ -128,12 +131,14 @@ def _empty_invoke_ast(ivkbl, _rcvr, _args):
     )
 
 
-def _empty_invoke_bc(ivkbl, stack_info):
+def _empty_invoke_bc(ivkbl, _execution_ctx):
     """Write a warning to the screen"""
     print(
         "Warning: undefined primitive #%s called"
         % ivkbl.get_signature().get_embedded_string()
     )
+    return 42 # Otherwise rpython complains about an empty invoke not returning an int...
+    # why it doesn't do it for the AST interp is beyond me. TODO investigate more
 
 
 if is_ast_interpreter():

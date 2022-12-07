@@ -119,6 +119,8 @@ def _to_by_do(_ivkbl, execution_ctx):
             block_method,
         )
 
+    return execution_ctx.stack_ptr
+
 
 def _down_to_do_int(i, by_increment, bottom, block, block_method):
     assert isinstance(i, int)
