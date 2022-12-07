@@ -93,13 +93,13 @@ def _to_do(rcvr, limit, block):
 def _to_by_do(_ivkbl, execution_ctx):
     block = execution_ctx.pop_1_tos1()  # it's also None'd in the og
 
-    by_increment = execution_ctx.pop_1_tos1()
+    by_increment = execution_ctx.pop_1()
 
-    limit = execution_ctx.pop_1_tos1()
+    limit = execution_ctx.pop_1()
 
     block_method = block.get_method()
 
-    self = execution_ctx.get_tos_tos1()
+    self = execution_ctx.get_tos()
 
     i = self.get_embedded_integer()
     if isinstance(limit, Double):
