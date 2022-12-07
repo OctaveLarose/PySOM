@@ -100,7 +100,7 @@ class Interpreter:
     def interpret(self):
         from som.vm.current import current_universe
 
-        execution_ctx = MethodExecutionContext(self.max_stack_size, no_tos_caching=True)
+        execution_ctx = MethodExecutionContext(self.max_stack_size)
 
         while True:
             self.jitdriver.jit_merge_point(

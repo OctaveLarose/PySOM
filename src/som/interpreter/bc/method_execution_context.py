@@ -7,9 +7,8 @@ class MethodExecutionContext:
     tos_reg = None
     is_tos_reg_in_use = False
 
-    def __init__(self, max_stack_size, no_tos_caching=False):
+    def __init__(self, max_stack_size):
         self.stack = [None] * max_stack_size
-        self.no_tos_caching = no_tos_caching
 
     def push_1(self, val):
         self.tos_reg = val
