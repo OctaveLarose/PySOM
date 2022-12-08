@@ -33,6 +33,3 @@ class MethodExecutionContext:
         self.stack_ptr -= 1
 
         return arg1, arg2
-
-    def read_stack_elem_tos1(self, offset):
-        return self.tos_reg if offset == 0 else self.stack[self.stack_ptr - offset + 1]

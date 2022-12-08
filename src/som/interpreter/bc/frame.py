@@ -46,7 +46,7 @@ def create_frame(
     make_sure_not_resized(frame)
 
     if execution_ctx.is_tos_reg_in_use:
-        receiver = execution_ctx.read_stack_elem_tos1(num_args - 1)
+        receiver = execution_ctx.tos_reg if num_args == 1 else execution_ctx.stack[execution_ctx.stack_ptr - num_args + 2]
     else:
         receiver = execution_ctx.stack[execution_ctx.stack_ptr - (num_args - 1)]
 
@@ -125,7 +125,7 @@ def _set_arguments_without_inner(
     while arg_i >= 0:
         obj = None
         if execution_ctx.is_tos_reg_in_use:
-            obj = execution_ctx.read_stack_elem_tos1(arg_i)
+            obj = execution_ctx.tos_reg if arg_i == 0 else execution_ctx.stack[execution_ctx.stack_ptr - arg_i + 1]
         else:
             obj = execution_ctx.stack[execution_ctx.stack_ptr - arg_i]
 
@@ -148,7 +148,7 @@ def _set_arguments_with_inner(
 
     while arg_i >= 0:
         if execution_ctx.is_tos_reg_in_use:
-            arg_val = execution_ctx.read_stack_elem_tos1(arg_i)
+            arg_val = execution_ctx.tos_reg if arg_i == 0 else execution_ctx.stack[execution_ctx.stack_ptr - arg_i + 1]
         else:
             arg_val = execution_ctx.stack[execution_ctx.stack_ptr - arg_i]
 
