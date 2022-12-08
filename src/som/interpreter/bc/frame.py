@@ -1,5 +1,6 @@
 from rlib import jit
 from rlib.debug import make_sure_not_resized
+from rlib.jit import we_are_jitted
 
 from som.vm.globals import nilObject, trueObject
 from som.interpreter.ast.frame import (
@@ -47,7 +48,7 @@ def create_frame(
     if execution_ctx.is_tos_reg_in_use:
         receiver = execution_ctx.read_stack_elem_tos1(num_args - 1)
     else:
-        receiver = execution_ctx.read_stack_elem(num_args - 1)
+        receiver = execution_ctx.stack[execution_ctx.stack_ptr - (num_args - 1)]
 
     assert num_args - 1 == len(arg_inner_access_reversed)  # num_args without rcvr
 
@@ -126,7 +127,7 @@ def _set_arguments_without_inner(
         if execution_ctx.is_tos_reg_in_use:
             obj = execution_ctx.read_stack_elem_tos1(arg_i)
         else:
-            obj = execution_ctx.read_stack_elem(arg_i)
+            obj = execution_ctx.stack[execution_ctx.stack_ptr - arg_i]
 
         frame[frame_i] = _erase_obj(obj)
         frame_i += 1
@@ -149,7 +150,7 @@ def _set_arguments_with_inner(
         if execution_ctx.is_tos_reg_in_use:
             arg_val = execution_ctx.read_stack_elem_tos1(arg_i)
         else:
-            arg_val = execution_ctx.read_stack_elem(arg_i)
+            arg_val = execution_ctx.stack[execution_ctx.stack_ptr - arg_i]
 
         if arg_inner_access_reversed[arg_i]:
             inner[inner_i] = arg_val
@@ -169,13 +170,16 @@ def stack_pop_old_arguments_and_push_result(execution_ctx, num_args, result):
         execution_ctx.stack_ptr += 1
         execution_ctx.stack[execution_ctx.stack_ptr] = result
     else:
-        execution_ctx.is_tos_reg_in_use = True; execution_ctx.tos_reg = (None)
-        execution_ctx.pop_1_tos1()
+        execution_ctx.tos_reg = (None)
+        execution_ctx.is_tos_reg_in_use = False
 
         for _ in range(num_args - 1):
             execution_ctx.stack[execution_ctx.stack_ptr] = None
-            execution_ctx.pop_1()
-        execution_ctx.push_1(result)
+            if we_are_jitted():
+                execution_ctx.stack[execution_ctx.stack_ptr] = None
+            execution_ctx.stack_ptr -= 1
+        execution_ctx.tos_reg = result
+        execution_ctx.is_tos_reg_in_use = True
 
     return execution_ctx.stack_ptr # mostly irrelevant, exists to make rpython happy by returning an int.
 

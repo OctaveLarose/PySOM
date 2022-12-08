@@ -256,7 +256,7 @@ def interpret(method, frame, max_stack_size):
 
             elif bytecode == Bytecodes.send_2:
                 signature = method.get_constant(current_bc_idx)
-                receiver = execution_ctx.read_stack_elem(1)
+                receiver = execution_ctx.stack[execution_ctx.stack_ptr - 1]
 
                 layout = receiver.get_object_layout(current_universe)
                 dispatch_node = _lookup(layout, signature, method, current_bc_idx, current_universe)
@@ -274,7 +274,7 @@ def interpret(method, frame, max_stack_size):
 
             elif bytecode == Bytecodes.send_3:
                 signature = method.get_constant(current_bc_idx)
-                receiver = execution_ctx.read_stack_elem(2)
+                receiver = execution_ctx.stack[execution_ctx.stack_ptr - 2]
 
                 layout = receiver.get_object_layout(current_universe)
                 dispatch_node = _lookup(
@@ -286,7 +286,7 @@ def interpret(method, frame, max_stack_size):
 
             elif bytecode == Bytecodes.send_n:
                 signature = method.get_constant(current_bc_idx)
-                receiver = execution_ctx.read_stack_elem(signature.get_number_of_signature_arguments() - 1)
+                receiver = execution_ctx.stack[execution_ctx.stack_ptr - (signature.get_number_of_signature_arguments() - 1)]
 
                 layout = receiver.get_object_layout(current_universe)
                 dispatch_node = _lookup(
@@ -981,7 +981,7 @@ def _do_super_send(bytecode_index, method, execution_ctx):
     invokable = receiver_class.lookup_invokable(signature)
 
     num_args = invokable.get_number_of_signature_arguments()
-    receiver = execution_ctx.read_stack_elem(num_args - 1)
+    receiver = execution_ctx.stack[execution_ctx.stack_ptr - (num_args - 1)]
 
     if invokable:
         first = method.get_inline_cache(bytecode_index)
