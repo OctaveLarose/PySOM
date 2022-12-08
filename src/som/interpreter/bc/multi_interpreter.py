@@ -52,94 +52,99 @@ def interpret(method, frame, max_stack_size):
                 return execution_ctx.get_tos()
 
             if bytecode == Bytecodes.dup:
-                execution_ctx.push_1(execution_ctx.get_tos())
+                execution_ctx.tos_reg = (execution_ctx.get_tos()); execution_ctx.is_tos_reg_in_use = True
 
             elif bytecode == Bytecodes.push_frame:
-                execution_ctx.push_1(read_frame(frame, method.get_bytecode(current_bc_idx + 1)))
+                execution_ctx.tos_reg = (read_frame(frame, method.get_bytecode(current_bc_idx + 1))); execution_ctx.is_tos_reg_in_use = True
 
             elif bytecode == Bytecodes.push_frame_0:
-                execution_ctx.push_1(read_frame(frame, FRAME_AND_INNER_RCVR_IDX + 0))
+                execution_ctx.tos_reg = (read_frame(frame, FRAME_AND_INNER_RCVR_IDX + 0)); execution_ctx.is_tos_reg_in_use = True
 
             elif bytecode == Bytecodes.push_frame_1:
-                execution_ctx.push_1(read_frame(frame, FRAME_AND_INNER_RCVR_IDX + 1))
+                execution_ctx.tos_reg = (read_frame(frame, FRAME_AND_INNER_RCVR_IDX + 1)); execution_ctx.is_tos_reg_in_use = True
 
             elif bytecode == Bytecodes.push_frame_2:
-                execution_ctx.push_1(read_frame(frame, FRAME_AND_INNER_RCVR_IDX + 2))
+                execution_ctx.tos_reg = (read_frame(frame, FRAME_AND_INNER_RCVR_IDX + 2)); execution_ctx.is_tos_reg_in_use = True
 
             elif bytecode == Bytecodes.push_inner:
                 idx = method.get_bytecode(current_bc_idx + 1)
                 ctx_level = method.get_bytecode(current_bc_idx + 2)
 
                 if ctx_level == 0:
-                    execution_ctx.push_1(read_inner(frame, idx))
+                    execution_ctx.tos_reg = (read_inner(frame, idx)); execution_ctx.is_tos_reg_in_use = True
                 else:
                     block = get_block_at(frame, ctx_level)
-                    execution_ctx.push_1(block.get_from_outer(idx))
+                    execution_ctx.tos_reg = (block.get_from_outer(idx)); execution_ctx.is_tos_reg_in_use = True
 
             elif bytecode == Bytecodes.push_inner_0:
-                execution_ctx.push_1(read_inner(frame, FRAME_AND_INNER_RCVR_IDX + 0))
+                execution_ctx.tos_reg = (read_inner(frame, FRAME_AND_INNER_RCVR_IDX + 0)); execution_ctx.is_tos_reg_in_use = True
 
             elif bytecode == Bytecodes.push_inner_1:
-                execution_ctx.push_1(read_inner(frame, FRAME_AND_INNER_RCVR_IDX + 1))
+                execution_ctx.tos_reg = (read_inner(frame, FRAME_AND_INNER_RCVR_IDX + 1)); execution_ctx.is_tos_reg_in_use = True
 
             elif bytecode == Bytecodes.push_inner_2:
-                execution_ctx.push_1(read_inner(frame, FRAME_AND_INNER_RCVR_IDX + 2))
+                execution_ctx.tos_reg = (read_inner(frame, FRAME_AND_INNER_RCVR_IDX + 2)); execution_ctx.is_tos_reg_in_use = True
 
             elif bytecode == Bytecodes.push_field:
                 field_idx = method.get_bytecode(current_bc_idx + 1)
                 ctx_level = method.get_bytecode(current_bc_idx + 2)
                 self_obj = get_self(frame, ctx_level)
-                execution_ctx.push_1(self_obj.get_field(field_idx))
+                execution_ctx.tos_reg = (self_obj.get_field(field_idx)); execution_ctx.is_tos_reg_in_use = True
 
             elif bytecode == Bytecodes.push_field_0:
                 self_obj = read_frame(frame, FRAME_AND_INNER_RCVR_IDX)
-                execution_ctx.push_1(self_obj.get_field(0))
+                execution_ctx.tos_reg = (self_obj.get_field(0)); execution_ctx.is_tos_reg_in_use = True
 
             elif bytecode == Bytecodes.push_field_1:
                 self_obj = read_frame(frame, FRAME_AND_INNER_RCVR_IDX)
-                execution_ctx.push_1(self_obj.get_field(1))
+                execution_ctx.tos_reg = (self_obj.get_field(1)); execution_ctx.is_tos_reg_in_use = True
 
             elif bytecode == Bytecodes.push_block:
                 block_method = method.get_constant(current_bc_idx)
-                execution_ctx.push_1(BcBlock(block_method, get_inner_as_context(frame)))
+                execution_ctx.tos_reg = (BcBlock(block_method, get_inner_as_context(frame))); execution_ctx.is_tos_reg_in_use = True
 
             elif bytecode == Bytecodes.push_block_no_ctx:
                 block_method = method.get_constant(current_bc_idx)
-                execution_ctx.push_1(BcBlock(block_method, None))
+                execution_ctx.tos_reg = (BcBlock(block_method, None)); execution_ctx.is_tos_reg_in_use = True
 
             elif bytecode == Bytecodes.push_constant:
-                execution_ctx.push_1(method.get_constant(current_bc_idx))
+                execution_ctx.tos_reg = (method.get_constant(current_bc_idx)); execution_ctx.is_tos_reg_in_use = True
 
             elif bytecode == Bytecodes.push_constant_0:
-                execution_ctx.push_1(method._literals[0])  # pylint: disable=protected-access
+                execution_ctx.tos_reg = (method._literals[0])  # pylint: disable=protected-access
+                execution_ctx.is_tos_reg_in_use = True
 
             elif bytecode == Bytecodes.push_constant_1:
-                execution_ctx.push_1(method._literals[1])  # pylint: disable=protected-access
+                execution_ctx.tos_reg = (method._literals[1])  # pylint: disable=protected-access
+                execution_ctx.is_tos_reg_in_use = True
 
             elif bytecode == Bytecodes.push_constant_2:
-                execution_ctx.push_1(method._literals[2])  # pylint: disable=protected-access
+                execution_ctx.tos_reg = (method._literals[2])  # pylint: disable=protected-access
+                execution_ctx.is_tos_reg_in_use = True
 
             elif bytecode == Bytecodes.push_0:
-                execution_ctx.push_1(int_0)
+                execution_ctx.tos_reg = (int_0); execution_ctx.is_tos_reg_in_use = True
 
             elif bytecode == Bytecodes.push_1:
-                execution_ctx.push_1(int_1)
+                execution_ctx.tos_reg = (int_1); execution_ctx.is_tos_reg_in_use = True
 
             elif bytecode == Bytecodes.push_nil:
-                execution_ctx.push_1(nilObject)
+                execution_ctx.tos_reg = (nilObject); execution_ctx.is_tos_reg_in_use = True
 
             elif bytecode == Bytecodes.push_global:
                 global_name = method.get_constant(current_bc_idx)
                 glob = current_universe.get_global(global_name)
 
                 if glob:
-                    execution_ctx.push_1(glob)
+                    execution_ctx.tos_reg = (glob); execution_ctx.is_tos_reg_in_use = True
                 else:
                     val = lookup_and_send_2(get_self_dynamically(frame), global_name, "unknownGlobal:")
-                    execution_ctx.push_1(val)
+                    execution_ctx.tos_reg = (val); execution_ctx.is_tos_reg_in_use = True
 
             elif bytecode == Bytecodes.pop:
-                execution_ctx.pop_1()
+                if we_are_jitted():
+                    execution_ctx.stack[execution_ctx.stack_ptr] = None
+                execution_ctx.stack_ptr -= 1
 
             elif bytecode == Bytecodes.pop_frame:
                 value = execution_ctx.pop_1()
@@ -328,7 +333,7 @@ def interpret(method, frame, max_stack_size):
                 ctx_level = method.get_bytecode(current_bc_idx + 2)
                 self_obj = get_self(frame, ctx_level)
 
-                execution_ctx.push_1(self_obj.inc_field(field_idx))
+                execution_ctx.tos_reg = (self_obj.inc_field(field_idx)); execution_ctx.is_tos_reg_in_use = True
 
             elif bytecode == Bytecodes.jump:
                 next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
@@ -479,91 +484,91 @@ def interpret(method, frame, max_stack_size):
                 return execution_ctx.get_tos_tos1()
 
             if bytecode == Bytecodes.dup:
-                execution_ctx.push_1_tos1(execution_ctx.get_tos_tos1())
+                execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (execution_ctx.get_tos_tos1())
 
             elif bytecode == Bytecodes.push_frame:
-                execution_ctx.push_1_tos1(read_frame(frame, method.get_bytecode(current_bc_idx + 1)))
+                execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (read_frame(frame, method.get_bytecode(current_bc_idx + 1)))
 
             elif bytecode == Bytecodes.push_frame_0:
-                execution_ctx.push_1_tos1(read_frame(frame, FRAME_AND_INNER_RCVR_IDX + 0))
+                execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (read_frame(frame, FRAME_AND_INNER_RCVR_IDX + 0))
 
             elif bytecode == Bytecodes.push_frame_1:
-                execution_ctx.push_1_tos1(read_frame(frame, FRAME_AND_INNER_RCVR_IDX + 1))
+                execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (read_frame(frame, FRAME_AND_INNER_RCVR_IDX + 1))
 
             elif bytecode == Bytecodes.push_frame_2:
-                execution_ctx.push_1_tos1(read_frame(frame, FRAME_AND_INNER_RCVR_IDX + 2))
+                execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (read_frame(frame, FRAME_AND_INNER_RCVR_IDX + 2))
 
             elif bytecode == Bytecodes.push_inner:
                 idx = method.get_bytecode(current_bc_idx + 1)
                 ctx_level = method.get_bytecode(current_bc_idx + 2)
 
                 if ctx_level == 0:
-                    execution_ctx.push_1_tos1(read_inner(frame, idx))
+                    execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (read_inner(frame, idx))
                 else:
                     block = get_block_at(frame, ctx_level)
-                    execution_ctx.push_1_tos1(block.get_from_outer(idx))
+                    execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (block.get_from_outer(idx))
 
             elif bytecode == Bytecodes.push_inner_0:
-                execution_ctx.push_1_tos1(read_inner(frame, FRAME_AND_INNER_RCVR_IDX + 0))
+                execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (read_inner(frame, FRAME_AND_INNER_RCVR_IDX + 0))
 
             elif bytecode == Bytecodes.push_inner_1:
-                execution_ctx.push_1_tos1(read_inner(frame, FRAME_AND_INNER_RCVR_IDX + 1))
+                execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (read_inner(frame, FRAME_AND_INNER_RCVR_IDX + 1))
 
             elif bytecode == Bytecodes.push_inner_2:
-                execution_ctx.push_1_tos1(read_inner(frame, FRAME_AND_INNER_RCVR_IDX + 2))
+                execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (read_inner(frame, FRAME_AND_INNER_RCVR_IDX + 2))
 
             elif bytecode == Bytecodes.push_field:
                 field_idx = method.get_bytecode(current_bc_idx + 1)
                 ctx_level = method.get_bytecode(current_bc_idx + 2)
                 self_obj = get_self(frame, ctx_level)
-                execution_ctx.push_1_tos1(self_obj.get_field(field_idx))
+                execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (self_obj.get_field(field_idx))
 
             elif bytecode == Bytecodes.push_field_0:
                 self_obj = read_frame(frame, FRAME_AND_INNER_RCVR_IDX)
-                execution_ctx.push_1_tos1(self_obj.get_field(0))
+                execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (self_obj.get_field(0))
 
             elif bytecode == Bytecodes.push_field_1:
                 self_obj = read_frame(frame, FRAME_AND_INNER_RCVR_IDX)
-                execution_ctx.push_1_tos1(self_obj.get_field(1))
+                execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (self_obj.get_field(1))
 
             elif bytecode == Bytecodes.push_block:
                 block_method = method.get_constant(current_bc_idx)
-                execution_ctx.push_1_tos1(BcBlock(block_method, get_inner_as_context(frame)))
+                execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (BcBlock(block_method, get_inner_as_context(frame)))
 
             elif bytecode == Bytecodes.push_block_no_ctx:
                 block_method = method.get_constant(current_bc_idx)
-                execution_ctx.push_1_tos1(BcBlock(block_method, None))
+                execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (BcBlock(block_method, None))
 
             elif bytecode == Bytecodes.push_constant:
-                execution_ctx.push_1_tos1(method.get_constant(current_bc_idx))
+                execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (method.get_constant(current_bc_idx))
 
             elif bytecode == Bytecodes.push_constant_0:
-                execution_ctx.push_1_tos1(method._literals[0])  # pylint: disable=protected-access
+                execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (method._literals[0])  # pylint: disable=protected-access
 
             elif bytecode == Bytecodes.push_constant_1:
-                execution_ctx.push_1_tos1(method._literals[1])  # pylint: disable=protected-access
+                execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (method._literals[1])  # pylint: disable=protected-access
 
             elif bytecode == Bytecodes.push_constant_2:
-                execution_ctx.push_1_tos1(method._literals[2])  # pylint: disable=protected-access
+                execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (method._literals[2])  # pylint: disable=protected-access
 
             elif bytecode == Bytecodes.push_0:
-                execution_ctx.push_1_tos1(int_0)
+                execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (int_0)
 
             elif bytecode == Bytecodes.push_1:
-                execution_ctx.push_1_tos1(int_1)
+                execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (int_1)
 
             elif bytecode == Bytecodes.push_nil:
-                execution_ctx.push_1_tos1(nilObject)
+                execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (nilObject)
 
             elif bytecode == Bytecodes.push_global:
                 global_name = method.get_constant(current_bc_idx)
                 glob = current_universe.get_global(global_name)
 
                 if glob:
-                    execution_ctx.push_1_tos1(glob)
+                    execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (glob)
                 else:
                     val = lookup_and_send_2(get_self_dynamically(frame), global_name, "unknownGlobal:")
-                    execution_ctx.push_1_tos1(val)
+                    execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (val)
 
             elif bytecode == Bytecodes.pop:
                 execution_ctx.pop_1_tos1()
@@ -755,7 +760,7 @@ def interpret(method, frame, max_stack_size):
                 ctx_level = method.get_bytecode(current_bc_idx + 2)
                 self_obj = get_self(frame, ctx_level)
 
-                execution_ctx.push_1_tos1(self_obj.inc_field(field_idx))
+                execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (self_obj.inc_field(field_idx))
 
             elif bytecode == Bytecodes.jump:
                 next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
