@@ -52,6 +52,7 @@ class MethodGenerationContext(MethodGenerationContextBase):
         self._literals = []
         self._finished = False
         self._bytecode = []
+        self._stack_caching_states = []
 
         # keep a list of arguments and locals for easy access
         # when patching bytecodes on method completion
@@ -173,6 +174,7 @@ class MethodGenerationContext(MethodGenerationContextBase):
         i = 0
         for bytecode in self._bytecode:
             meth.set_bytecode(i, bytecode)
+            meth.set_stack_cache_state(i, self._stack_caching_states[i])
             i += 1
 
         # return the method - the holder field is to be set later on!
@@ -274,12 +276,17 @@ class MethodGenerationContext(MethodGenerationContextBase):
             return 0
         return 1 + self.outer_genc.get_max_context_level()
 
+    def add_stack_cache_state(self, _bytecode):
+        self._stack_caching_states.append(1)
+
     def add_bytecode(self, bytecode, stack_effect):
         self._current_stack_depth += stack_effect
         if self._current_stack_depth > self.max_stack_depth:
             self.max_stack_depth = self._current_stack_depth
 
         self._bytecode.append(bytecode)
+        self.add_stack_cache_state(bytecode)
+
         self._last_4_bytecodes[0] = self._last_4_bytecodes[1]
         self._last_4_bytecodes[1] = self._last_4_bytecodes[2]
         self._last_4_bytecodes[2] = self._last_4_bytecodes[3]
@@ -287,10 +294,12 @@ class MethodGenerationContext(MethodGenerationContextBase):
 
     def add_bytecode_argument(self, bytecode):
         self._bytecode.append(bytecode)
+        self.add_stack_cache_state(bytecode)
 
     def add_bytecode_argument_and_get_index(self, bytecode):
         idx = len(self._bytecode)
         self._bytecode.append(bytecode)
+        self.add_stack_cache_state(bytecode)
         return idx
 
     def has_bytecode(self):

@@ -36,6 +36,7 @@ def interpret(method, frame, max_stack_size):
         )
 
         bytecode = method.get_bytecode(current_bc_idx)
+        # print(bytecode_as_str(bytecode))
 
         # Get the length of the current bytecode
         bc_length = bytecode_length(bytecode)
