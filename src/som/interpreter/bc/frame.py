@@ -169,11 +169,11 @@ def stack_pop_old_arguments_and_push_result(execution_ctx, num_args, result):
         execution_ctx.stack_ptr += 1
         execution_ctx.stack[execution_ctx.stack_ptr] = result
     else:
-        execution_ctx.set_tos_tos1(None)
+        execution_ctx.is_tos_reg_in_use = True; execution_ctx.tos_reg = (None)
         execution_ctx.pop_1_tos1()
 
         for _ in range(num_args - 1):
-            execution_ctx.set_tos(None)
+            execution_ctx.stack[execution_ctx.stack_ptr] = None
             execution_ctx.pop_1()
         execution_ctx.push_1(result)
 

@@ -49,10 +49,10 @@ def interpret(method, frame, max_stack_size):
             # print "BASE ", bytecode_as_str(bytecode)
 
             if bytecode == Bytecodes.halt:
-                return execution_ctx.get_tos()
+                return execution_ctx.stack[execution_ctx.stack_ptr]
 
             if bytecode == Bytecodes.dup:
-                execution_ctx.tos_reg = (execution_ctx.get_tos()); execution_ctx.is_tos_reg_in_use = True
+                execution_ctx.tos_reg = (execution_ctx.stack[execution_ctx.stack_ptr]); execution_ctx.is_tos_reg_in_use = True
 
             elif bytecode == Bytecodes.push_frame:
                 execution_ctx.tos_reg = (read_frame(frame, method.get_bytecode(current_bc_idx + 1))); execution_ctx.is_tos_reg_in_use = True
@@ -147,25 +147,40 @@ def interpret(method, frame, max_stack_size):
                 execution_ctx.stack_ptr -= 1
 
             elif bytecode == Bytecodes.pop_frame:
-                value = execution_ctx.pop_1()
+                value = execution_ctx.stack[execution_ctx.stack_ptr]
+                if we_are_jitted():
+                    execution_ctx.stack[execution_ctx.stack_ptr] = None
+                execution_ctx.stack_ptr -= 1
                 write_frame(frame, method.get_bytecode(current_bc_idx + 1), value)
 
             elif bytecode == Bytecodes.pop_frame_0:
-                value = execution_ctx.pop_1()
+                value = execution_ctx.stack[execution_ctx.stack_ptr]
+                if we_are_jitted():
+                    execution_ctx.stack[execution_ctx.stack_ptr] = None
+                execution_ctx.stack_ptr -= 1
                 write_frame(frame, FRAME_AND_INNER_RCVR_IDX + 0, value)
 
             elif bytecode == Bytecodes.pop_frame_1:
-                value = execution_ctx.pop_1()
+                value = execution_ctx.stack[execution_ctx.stack_ptr]
+                if we_are_jitted():
+                    execution_ctx.stack[execution_ctx.stack_ptr] = None
+                execution_ctx.stack_ptr -= 1
                 write_frame(frame, FRAME_AND_INNER_RCVR_IDX + 1, value)
 
             elif bytecode == Bytecodes.pop_frame_2:
-                value = execution_ctx.pop_1()
+                value = execution_ctx.stack[execution_ctx.stack_ptr]
+                if we_are_jitted():
+                    execution_ctx.stack[execution_ctx.stack_ptr] = None
+                execution_ctx.stack_ptr -= 1
                 write_frame(frame, FRAME_AND_INNER_RCVR_IDX + 2, value)
 
             elif bytecode == Bytecodes.pop_inner:
                 idx = method.get_bytecode(current_bc_idx + 1)
                 ctx_level = method.get_bytecode(current_bc_idx + 2)
-                value = execution_ctx.pop_1()
+                value = execution_ctx.stack[execution_ctx.stack_ptr]
+                if we_are_jitted():
+                    execution_ctx.stack[execution_ctx.stack_ptr] = None
+                execution_ctx.stack_ptr -= 1
 
                 if ctx_level == 0:
                     write_inner(frame, idx, value)
@@ -174,15 +189,24 @@ def interpret(method, frame, max_stack_size):
                     block.set_outer(idx, value)
 
             elif bytecode == Bytecodes.pop_inner_0:
-                value = execution_ctx.pop_1()
+                value = execution_ctx.stack[execution_ctx.stack_ptr]
+                if we_are_jitted():
+                    execution_ctx.stack[execution_ctx.stack_ptr] = None
+                execution_ctx.stack_ptr -= 1
                 write_inner(frame, FRAME_AND_INNER_RCVR_IDX + 0, value)
 
             elif bytecode == Bytecodes.pop_inner_1:
-                value = execution_ctx.pop_1()
+                value = execution_ctx.stack[execution_ctx.stack_ptr]
+                if we_are_jitted():
+                    execution_ctx.stack[execution_ctx.stack_ptr] = None
+                execution_ctx.stack_ptr -= 1
                 write_inner(frame, FRAME_AND_INNER_RCVR_IDX + 1, value)
 
             elif bytecode == Bytecodes.pop_inner_2:
-                value = execution_ctx.pop_1()
+                value = execution_ctx.stack[execution_ctx.stack_ptr]
+                if we_are_jitted():
+                    execution_ctx.stack[execution_ctx.stack_ptr] = None
+                execution_ctx.stack_ptr -= 1
                 write_inner(frame, FRAME_AND_INNER_RCVR_IDX + 2, value)
 
             elif bytecode == Bytecodes.pop_field:
@@ -190,26 +214,35 @@ def interpret(method, frame, max_stack_size):
                 ctx_level = method.get_bytecode(current_bc_idx + 2)
                 self_obj = get_self(frame, ctx_level)
 
-                value = execution_ctx.pop_1()
+                value = execution_ctx.stack[execution_ctx.stack_ptr]
+                if we_are_jitted():
+                    execution_ctx.stack[execution_ctx.stack_ptr] = None
+                execution_ctx.stack_ptr -= 1
 
                 self_obj.set_field(field_idx, value)
 
             elif bytecode == Bytecodes.pop_field_0:
                 self_obj = read_frame(frame, FRAME_AND_INNER_RCVR_IDX)
 
-                value = execution_ctx.pop_1()
+                value = execution_ctx.stack[execution_ctx.stack_ptr]
+                if we_are_jitted():
+                    execution_ctx.stack[execution_ctx.stack_ptr] = None
+                execution_ctx.stack_ptr -= 1
 
                 self_obj.set_field(0, value)
 
             elif bytecode == Bytecodes.pop_field_1:
                 self_obj = read_frame(frame, FRAME_AND_INNER_RCVR_IDX)
 
-                value = execution_ctx.pop_1()
+                value = execution_ctx.stack[execution_ctx.stack_ptr]
+                if we_are_jitted():
+                    execution_ctx.stack[execution_ctx.stack_ptr] = None
+                execution_ctx.stack_ptr -= 1
                 self_obj.set_field(1, value)
 
             elif bytecode == Bytecodes.send_1:
                 signature = method.get_constant(current_bc_idx)
-                receiver = execution_ctx.get_tos()
+                receiver = execution_ctx.stack[execution_ctx.stack_ptr]
 
                 layout = receiver.get_object_layout(current_universe)
                 dispatch_node = _lookup(layout, signature, method, current_bc_idx, current_universe)
@@ -219,7 +252,7 @@ def interpret(method, frame, max_stack_size):
                         receiver, method, current_bc_idx, current_universe
                     )
 
-                execution_ctx.set_tos(dispatch_node.dispatch_1(receiver))
+                execution_ctx.stack[execution_ctx.stack_ptr] = (dispatch_node.dispatch_1(receiver))
 
             elif bytecode == Bytecodes.send_2:
                 signature = method.get_constant(current_bc_idx)
@@ -233,8 +266,11 @@ def interpret(method, frame, max_stack_size):
                         receiver, method, current_bc_idx, current_universe
                     )
 
-                arg = execution_ctx.pop_1()
-                execution_ctx.set_tos(dispatch_node.dispatch_2(receiver, arg))
+                arg = execution_ctx.stack[execution_ctx.stack_ptr]
+                if we_are_jitted():
+                    execution_ctx.stack[execution_ctx.stack_ptr] = None
+                execution_ctx.stack_ptr -= 1
+                execution_ctx.stack[execution_ctx.stack_ptr] = (dispatch_node.dispatch_2(receiver, arg))
 
             elif bytecode == Bytecodes.send_3:
                 signature = method.get_constant(current_bc_idx)
@@ -246,7 +282,7 @@ def interpret(method, frame, max_stack_size):
                 )
 
                 arg2, arg1 = execution_ctx.pop_2()
-                execution_ctx.set_tos(dispatch_node.dispatch_3(receiver, arg1, arg2))
+                execution_ctx.stack[execution_ctx.stack_ptr] = (dispatch_node.dispatch_3(receiver, arg1, arg2))
 
             elif bytecode == Bytecodes.send_n:
                 signature = method.get_constant(current_bc_idx)
@@ -268,10 +304,10 @@ def interpret(method, frame, max_stack_size):
                 _do_super_send(current_bc_idx, method, execution_ctx)
 
             elif bytecode == Bytecodes.return_local:
-                return execution_ctx.get_tos()
+                return execution_ctx.stack[execution_ctx.stack_ptr]
 
             elif bytecode == Bytecodes.return_non_local:
-                val = execution_ctx.get_tos()
+                val = execution_ctx.stack[execution_ctx.stack_ptr]
                 return _do_return_non_local(val, frame, method.get_bytecode(current_bc_idx + 1))
 
             elif bytecode == Bytecodes.return_self:
@@ -290,7 +326,7 @@ def interpret(method, frame, max_stack_size):
                 return self_obj.get_field(2)
 
             elif bytecode == Bytecodes.inc:
-                val = execution_ctx.get_tos()
+                val = execution_ctx.stack[execution_ctx.stack_ptr]
                 from som.vmobjects.integer import Integer
                 from som.vmobjects.double import Double
                 from som.vmobjects.biginteger import BigInteger
@@ -303,10 +339,10 @@ def interpret(method, frame, max_stack_size):
                     result = val.prim_inc()
                 else:
                     return _not_yet_implemented()
-                execution_ctx.set_tos(result)
+                execution_ctx.stack[execution_ctx.stack_ptr] = (result)
 
             elif bytecode == Bytecodes.dec:
-                val = execution_ctx.get_tos()
+                val = execution_ctx.stack[execution_ctx.stack_ptr]
                 from som.vmobjects.integer import Integer
                 from som.vmobjects.double import Double
                 from som.vmobjects.biginteger import BigInteger
@@ -319,7 +355,7 @@ def interpret(method, frame, max_stack_size):
                     result = val.prim_dec()
                 else:
                     return _not_yet_implemented()
-                execution_ctx.set_tos(result)
+                execution_ctx.stack[execution_ctx.stack_ptr] = (result)
 
             elif bytecode == Bytecodes.inc_field:
                 field_idx = method.get_bytecode(current_bc_idx + 1)
@@ -339,32 +375,40 @@ def interpret(method, frame, max_stack_size):
                 next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
 
             elif bytecode == Bytecodes.jump_on_true_top_nil:
-                val = execution_ctx.get_tos()
+                val = execution_ctx.stack[execution_ctx.stack_ptr]
                 if val is trueObject:
                     next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
-                    execution_ctx.set_tos(nilObject)
+                    execution_ctx.stack[execution_ctx.stack_ptr] = (nilObject)
                 else:
-                    execution_ctx.pop_1()
+                    if we_are_jitted():
+                        execution_ctx.stack[execution_ctx.stack_ptr] = None
+                    execution_ctx.stack_ptr -= 1
 
             elif bytecode == Bytecodes.jump_on_false_top_nil:
-                val = execution_ctx.get_tos()
+                val = execution_ctx.stack[execution_ctx.stack_ptr]
                 if val is falseObject:
                     next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
-                    execution_ctx.set_tos(nilObject)
+                    execution_ctx.stack[execution_ctx.stack_ptr] = (nilObject)
                 else:
-                    execution_ctx.pop_1()
+                    if we_are_jitted():
+                        execution_ctx.stack[execution_ctx.stack_ptr] = None
+                    execution_ctx.stack_ptr -= 1
 
             elif bytecode == Bytecodes.jump_on_true_pop:
-                val = execution_ctx.get_tos()
+                val = execution_ctx.stack[execution_ctx.stack_ptr]
                 if val is trueObject:
                     next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
-                execution_ctx.pop_1()
+                if we_are_jitted():
+                    execution_ctx.stack[execution_ctx.stack_ptr] = None
+                execution_ctx.stack_ptr -= 1
 
             elif bytecode == Bytecodes.jump_on_false_pop:
-                val = execution_ctx.get_tos()
+                val = execution_ctx.stack[execution_ctx.stack_ptr]
                 if val is falseObject:
                     next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
-                execution_ctx.pop_1()
+                if we_are_jitted():
+                    execution_ctx.stack[execution_ctx.stack_ptr] = None
+                execution_ctx.stack_ptr -= 1
 
             elif bytecode == Bytecodes.jump_backward:
                 next_bc_idx = current_bc_idx - method.get_bytecode(current_bc_idx + 1)
@@ -384,48 +428,56 @@ def interpret(method, frame, max_stack_size):
                 )
 
             elif bytecode == Bytecodes.jump2_on_true_top_nil:
-                val = execution_ctx.get_tos()
+                val = execution_ctx.stack[execution_ctx.stack_ptr]
                 if val is trueObject:
                     next_bc_idx = (
                             current_bc_idx
                             + method.get_bytecode(current_bc_idx + 1)
                             + (method.get_bytecode(current_bc_idx + 2) << 8)
                     )
-                    execution_ctx.set_tos(nilObject)
+                    execution_ctx.stack[execution_ctx.stack_ptr] = (nilObject)
                 else:
-                    execution_ctx.pop_1()
+                    if we_are_jitted():
+                        execution_ctx.stack[execution_ctx.stack_ptr] = None
+                    execution_ctx.stack_ptr -= 1
 
             elif bytecode == Bytecodes.jump2_on_false_top_nil:
-                val = execution_ctx.get_tos()
+                val = execution_ctx.stack[execution_ctx.stack_ptr]
                 if val is falseObject:
                     next_bc_idx = (
                             current_bc_idx
                             + method.get_bytecode(current_bc_idx + 1)
                             + (method.get_bytecode(current_bc_idx + 2) << 8)
                     )
-                    execution_ctx.set_tos(nilObject)
+                    execution_ctx.stack[execution_ctx.stack_ptr] = (nilObject)
                 else:
-                    execution_ctx.pop_1()
+                    if we_are_jitted():
+                        execution_ctx.stack[execution_ctx.stack_ptr] = None
+                    execution_ctx.stack_ptr -= 1
 
             elif bytecode == Bytecodes.jump2_on_true_pop:
-                val = execution_ctx.get_tos()
+                val = execution_ctx.stack[execution_ctx.stack_ptr]
                 if val is trueObject:
                     next_bc_idx = (
                             current_bc_idx
                             + method.get_bytecode(current_bc_idx + 1)
                             + (method.get_bytecode(current_bc_idx + 2) << 8)
                     )
-                execution_ctx.pop_1()
+                if we_are_jitted():
+                    execution_ctx.stack[execution_ctx.stack_ptr] = None
+                execution_ctx.stack_ptr -= 1
 
             elif bytecode == Bytecodes.jump2_on_false_pop:
-                val = execution_ctx.get_tos()
+                val = execution_ctx.stack[execution_ctx.stack_ptr]
                 if val is falseObject:
                     next_bc_idx = (
                             current_bc_idx
                             + method.get_bytecode(current_bc_idx + 1)
                             + (method.get_bytecode(current_bc_idx + 2) << 8)
                     )
-                execution_ctx.pop_1()
+                if we_are_jitted():
+                    execution_ctx.stack[execution_ctx.stack_ptr] = None
+                execution_ctx.stack_ptr -= 1
 
             elif bytecode == Bytecodes.jump2_backward:
                 next_bc_idx = current_bc_idx - (
@@ -442,17 +494,20 @@ def interpret(method, frame, max_stack_size):
 
             elif bytecode == Bytecodes.q_super_send_1:
                 invokable = method.get_inline_cache(current_bc_idx)
-                execution_ctx.set_tos(invokable.dispatch_1(execution_ctx.get_tos()))
+                execution_ctx.stack[execution_ctx.stack_ptr] = (invokable.dispatch_1(execution_ctx.stack[execution_ctx.stack_ptr]))
 
             elif bytecode == Bytecodes.q_super_send_2:
                 invokable = method.get_inline_cache(current_bc_idx)
-                arg = execution_ctx.pop_1()
-                execution_ctx.set_tos(invokable.dispatch_2(execution_ctx.get_tos(), arg))
+                arg = execution_ctx.stack[execution_ctx.stack_ptr]
+                if we_are_jitted():
+                    execution_ctx.stack[execution_ctx.stack_ptr] = None
+                execution_ctx.stack_ptr -= 1
+                execution_ctx.stack[execution_ctx.stack_ptr] = (invokable.dispatch_2(execution_ctx.stack[execution_ctx.stack_ptr], arg))
 
             elif bytecode == Bytecodes.q_super_send_3:
                 invokable = method.get_inline_cache(current_bc_idx)
                 arg2, arg1 = execution_ctx.pop_2()
-                execution_ctx.set_tos(invokable.dispatch_3(execution_ctx.get_tos(), arg1, arg2))
+                execution_ctx.stack[execution_ctx.stack_ptr] = (invokable.dispatch_3(execution_ctx.stack[execution_ctx.stack_ptr], arg1, arg2))
 
             elif bytecode == Bytecodes.q_super_send_n:
                 invokable = method.get_inline_cache(current_bc_idx)
@@ -481,10 +536,10 @@ def interpret(method, frame, max_stack_size):
             # print "TOS1 ", bytecode_as_str(bytecode)
 
             if bytecode == Bytecodes.halt:
-                return execution_ctx.get_tos_tos1()
+                return execution_ctx.tos_reg
 
             if bytecode == Bytecodes.dup:
-                execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (execution_ctx.get_tos_tos1())
+                execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (execution_ctx.tos_reg)
 
             elif bytecode == Bytecodes.push_frame:
                 execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (read_frame(frame, method.get_bytecode(current_bc_idx + 1)))
@@ -571,28 +626,33 @@ def interpret(method, frame, max_stack_size):
                     execution_ctx.stack_ptr += 1; execution_ctx.stack[execution_ctx.stack_ptr] = execution_ctx.tos_reg; execution_ctx.tos_reg = (val)
 
             elif bytecode == Bytecodes.pop:
-                execution_ctx.pop_1_tos1()
+                execution_ctx.is_tos_reg_in_use = False
 
             elif bytecode == Bytecodes.pop_frame:
-                value = execution_ctx.pop_1_tos1()
+                value = execution_ctx.tos_reg
+                execution_ctx.is_tos_reg_in_use = False
                 write_frame(frame, method.get_bytecode(current_bc_idx + 1), value)
 
             elif bytecode == Bytecodes.pop_frame_0:
-                value = execution_ctx.pop_1_tos1()
+                value = execution_ctx.tos_reg
+                execution_ctx.is_tos_reg_in_use = False
                 write_frame(frame, FRAME_AND_INNER_RCVR_IDX + 0, value)
 
             elif bytecode == Bytecodes.pop_frame_1:
-                value = execution_ctx.pop_1_tos1()
+                value = execution_ctx.tos_reg
+                execution_ctx.is_tos_reg_in_use = False
                 write_frame(frame, FRAME_AND_INNER_RCVR_IDX + 1, value)
 
             elif bytecode == Bytecodes.pop_frame_2:
-                value = execution_ctx.pop_1_tos1()
+                value = execution_ctx.tos_reg
+                execution_ctx.is_tos_reg_in_use = False
                 write_frame(frame, FRAME_AND_INNER_RCVR_IDX + 2, value)
 
             elif bytecode == Bytecodes.pop_inner:
                 idx = method.get_bytecode(current_bc_idx + 1)
                 ctx_level = method.get_bytecode(current_bc_idx + 2)
-                value = execution_ctx.pop_1_tos1()
+                value = execution_ctx.tos_reg
+                execution_ctx.is_tos_reg_in_use = False
 
                 if ctx_level == 0:
                     write_inner(frame, idx, value)
@@ -601,15 +661,18 @@ def interpret(method, frame, max_stack_size):
                     block.set_outer(idx, value)
 
             elif bytecode == Bytecodes.pop_inner_0:
-                value = execution_ctx.pop_1_tos1()
+                value = execution_ctx.tos_reg
+                execution_ctx.is_tos_reg_in_use = False
                 write_inner(frame, FRAME_AND_INNER_RCVR_IDX + 0, value)
 
             elif bytecode == Bytecodes.pop_inner_1:
-                value = execution_ctx.pop_1_tos1()
+                value = execution_ctx.tos_reg
+                execution_ctx.is_tos_reg_in_use = False
                 write_inner(frame, FRAME_AND_INNER_RCVR_IDX + 1, value)
 
             elif bytecode == Bytecodes.pop_inner_2:
-                value = execution_ctx.pop_1_tos1()
+                value = execution_ctx.tos_reg
+                execution_ctx.is_tos_reg_in_use = False
                 write_inner(frame, FRAME_AND_INNER_RCVR_IDX + 2, value)
 
             elif bytecode == Bytecodes.pop_field:
@@ -617,26 +680,29 @@ def interpret(method, frame, max_stack_size):
                 ctx_level = method.get_bytecode(current_bc_idx + 2)
                 self_obj = get_self(frame, ctx_level)
 
-                value = execution_ctx.pop_1_tos1()
+                value = execution_ctx.tos_reg
+                execution_ctx.is_tos_reg_in_use = False
 
                 self_obj.set_field(field_idx, value)
 
             elif bytecode == Bytecodes.pop_field_0:
                 self_obj = read_frame(frame, FRAME_AND_INNER_RCVR_IDX)
 
-                value = execution_ctx.pop_1_tos1()
+                value = execution_ctx.tos_reg
+                execution_ctx.is_tos_reg_in_use = False
 
                 self_obj.set_field(0, value)
 
             elif bytecode == Bytecodes.pop_field_1:
                 self_obj = read_frame(frame, FRAME_AND_INNER_RCVR_IDX)
 
-                value = execution_ctx.pop_1_tos1()
+                value = execution_ctx.tos_reg
+                execution_ctx.is_tos_reg_in_use = False
                 self_obj.set_field(1, value)
 
             elif bytecode == Bytecodes.send_1:
                 signature = method.get_constant(current_bc_idx)
-                receiver = execution_ctx.get_tos_tos1()
+                receiver = execution_ctx.tos_reg
 
                 layout = receiver.get_object_layout(current_universe)
                 dispatch_node = _lookup(layout, signature, method, current_bc_idx, current_universe)
@@ -646,7 +712,7 @@ def interpret(method, frame, max_stack_size):
                         receiver, method, current_bc_idx, current_universe
                     )
 
-                execution_ctx.set_tos_tos1(dispatch_node.dispatch_1(receiver))
+                execution_ctx.is_tos_reg_in_use = True; execution_ctx.tos_reg = (dispatch_node.dispatch_1(receiver))
 
             elif bytecode == Bytecodes.send_2:
                 signature = method.get_constant(current_bc_idx)
@@ -660,8 +726,9 @@ def interpret(method, frame, max_stack_size):
                         receiver, method, current_bc_idx, current_universe
                     )
 
-                arg = execution_ctx.pop_1_tos1()
-                execution_ctx.set_tos(dispatch_node.dispatch_2(receiver, arg))
+                arg = execution_ctx.tos_reg
+                execution_ctx.is_tos_reg_in_use = False
+                execution_ctx.stack[execution_ctx.stack_ptr] = (dispatch_node.dispatch_2(receiver, arg))
 
             elif bytecode == Bytecodes.send_3:
                 signature = method.get_constant(current_bc_idx)
@@ -673,7 +740,7 @@ def interpret(method, frame, max_stack_size):
                 )
 
                 arg2, arg1 = execution_ctx.pop_2_tos1()
-                execution_ctx.set_tos(dispatch_node.dispatch_3(receiver, arg1, arg2))
+                execution_ctx.stack[execution_ctx.stack_ptr] = (dispatch_node.dispatch_3(receiver, arg1, arg2))
 
             elif bytecode == Bytecodes.send_n:
                 signature = method.get_constant(current_bc_idx)
@@ -695,10 +762,10 @@ def interpret(method, frame, max_stack_size):
                 _do_super_send_tos(current_bc_idx, method, execution_ctx)
 
             elif bytecode == Bytecodes.return_local:
-                return execution_ctx.get_tos_tos1()
+                return execution_ctx.tos_reg
 
             elif bytecode == Bytecodes.return_non_local:
-                val = execution_ctx.get_tos_tos1()
+                val = execution_ctx.tos_reg
                 return _do_return_non_local(val, frame, method.get_bytecode(current_bc_idx + 1))
 
             elif bytecode == Bytecodes.return_self:
@@ -717,7 +784,7 @@ def interpret(method, frame, max_stack_size):
                 return self_obj.get_field(2)
 
             elif bytecode == Bytecodes.inc:
-                val = execution_ctx.get_tos_tos1()
+                val = execution_ctx.tos_reg
                 from som.vmobjects.integer import Integer
                 from som.vmobjects.double import Double
                 from som.vmobjects.biginteger import BigInteger
@@ -730,10 +797,10 @@ def interpret(method, frame, max_stack_size):
                     result = val.prim_inc()
                 else:
                     return _not_yet_implemented()
-                execution_ctx.set_tos_tos1(result)
+                execution_ctx.is_tos_reg_in_use = True; execution_ctx.tos_reg = (result)
 
             elif bytecode == Bytecodes.dec:
-                val = execution_ctx.get_tos_tos1()
+                val = execution_ctx.tos_reg
                 from som.vmobjects.integer import Integer
                 from som.vmobjects.double import Double
                 from som.vmobjects.biginteger import BigInteger
@@ -746,7 +813,7 @@ def interpret(method, frame, max_stack_size):
                     result = val.prim_dec()
                 else:
                     return _not_yet_implemented()
-                execution_ctx.set_tos_tos1(result)
+                execution_ctx.is_tos_reg_in_use = True; execution_ctx.tos_reg = (result)
 
             elif bytecode == Bytecodes.inc_field:
                 field_idx = method.get_bytecode(current_bc_idx + 1)
@@ -766,32 +833,32 @@ def interpret(method, frame, max_stack_size):
                 next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
 
             elif bytecode == Bytecodes.jump_on_true_top_nil:
-                val = execution_ctx.get_tos_tos1()
+                val = execution_ctx.tos_reg
                 if val is trueObject:
                     next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
-                    execution_ctx.set_tos_tos1(nilObject)
+                    execution_ctx.is_tos_reg_in_use = True; execution_ctx.tos_reg = (nilObject)
                 else:
-                    execution_ctx.pop_1_tos1()
+                    execution_ctx.is_tos_reg_in_use = False
 
             elif bytecode == Bytecodes.jump_on_false_top_nil:
-                val = execution_ctx.get_tos_tos1()
+                val = execution_ctx.tos_reg
                 if val is falseObject:
                     next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
-                    execution_ctx.set_tos_tos1(nilObject)
+                    execution_ctx.is_tos_reg_in_use = True; execution_ctx.tos_reg = (nilObject)
                 else:
-                    execution_ctx.pop_1_tos1()
+                    execution_ctx.is_tos_reg_in_use = False
 
             elif bytecode == Bytecodes.jump_on_true_pop:
-                val = execution_ctx.get_tos_tos1()
+                val = execution_ctx.tos_reg
                 if val is trueObject:
                     next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
-                execution_ctx.pop_1_tos1()
+                execution_ctx.is_tos_reg_in_use = False
 
             elif bytecode == Bytecodes.jump_on_false_pop:
-                val = execution_ctx.get_tos_tos1()
+                val = execution_ctx.tos_reg
                 if val is falseObject:
                     next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
-                execution_ctx.pop_1_tos1()
+                execution_ctx.is_tos_reg_in_use = False
 
             elif bytecode == Bytecodes.jump_backward:
                 next_bc_idx = current_bc_idx - method.get_bytecode(current_bc_idx + 1)
@@ -811,48 +878,48 @@ def interpret(method, frame, max_stack_size):
                 )
 
             elif bytecode == Bytecodes.jump2_on_true_top_nil:
-                val = execution_ctx.get_tos_tos1()
+                val = execution_ctx.tos_reg
                 if val is trueObject:
                     next_bc_idx = (
                             current_bc_idx
                             + method.get_bytecode(current_bc_idx + 1)
                             + (method.get_bytecode(current_bc_idx + 2) << 8)
                     )
-                    execution_ctx.set_tos_tos1(nilObject)
+                    execution_ctx.is_tos_reg_in_use = True; execution_ctx.tos_reg = (nilObject)
                 else:
-                    execution_ctx.pop_1_tos1()
+                    execution_ctx.is_tos_reg_in_use = False
 
             elif bytecode == Bytecodes.jump2_on_false_top_nil:
-                val = execution_ctx.get_tos_tos1()
+                val = execution_ctx.tos_reg
                 if val is falseObject:
                     next_bc_idx = (
                             current_bc_idx
                             + method.get_bytecode(current_bc_idx + 1)
                             + (method.get_bytecode(current_bc_idx + 2) << 8)
                     )
-                    execution_ctx.set_tos_tos1(nilObject)
+                    execution_ctx.is_tos_reg_in_use = True; execution_ctx.tos_reg = (nilObject)
                 else:
-                    execution_ctx.pop_1_tos1()
+                    execution_ctx.is_tos_reg_in_use = False
 
             elif bytecode == Bytecodes.jump2_on_true_pop:
-                val = execution_ctx.get_tos_tos1()
+                val = execution_ctx.tos_reg
                 if val is trueObject:
                     next_bc_idx = (
                             current_bc_idx
                             + method.get_bytecode(current_bc_idx + 1)
                             + (method.get_bytecode(current_bc_idx + 2) << 8)
                     )
-                execution_ctx.pop_1_tos1()
+                execution_ctx.is_tos_reg_in_use = False
 
             elif bytecode == Bytecodes.jump2_on_false_pop:
-                val = execution_ctx.get_tos_tos1()
+                val = execution_ctx.tos_reg
                 if val is falseObject:
                     next_bc_idx = (
                             current_bc_idx
                             + method.get_bytecode(current_bc_idx + 1)
                             + (method.get_bytecode(current_bc_idx + 2) << 8)
                     )
-                execution_ctx.pop_1_tos1()
+                execution_ctx.is_tos_reg_in_use = False
 
             elif bytecode == Bytecodes.jump2_backward:
                 next_bc_idx = current_bc_idx - (
@@ -869,17 +936,18 @@ def interpret(method, frame, max_stack_size):
 
             elif bytecode == Bytecodes.q_super_send_1:
                 invokable = method.get_inline_cache(current_bc_idx)
-                execution_ctx.set_tos_tos1(invokable.dispatch_1(execution_ctx.get_tos_tos1()))
+                execution_ctx.is_tos_reg_in_use = True; execution_ctx.tos_reg = (invokable.dispatch_1(execution_ctx.tos_reg))
 
             elif bytecode == Bytecodes.q_super_send_2:
                 invokable = method.get_inline_cache(current_bc_idx)
-                arg = execution_ctx.pop_1_tos1()
-                execution_ctx.set_tos_tos1(invokable.dispatch_2(execution_ctx.get_tos(), arg))
+                arg = execution_ctx.tos_reg
+                execution_ctx.is_tos_reg_in_use = False
+                execution_ctx.is_tos_reg_in_use = True; execution_ctx.tos_reg = (invokable.dispatch_2(execution_ctx.stack[execution_ctx.stack_ptr], arg))
 
             elif bytecode == Bytecodes.q_super_send_3:
                 invokable = method.get_inline_cache(current_bc_idx)
                 arg2, arg1 = execution_ctx.pop_2_tos1()
-                execution_ctx.set_tos_tos1(invokable.dispatch_3(execution_ctx.get_tos(), arg1, arg2))
+                execution_ctx.is_tos_reg_in_use = True; execution_ctx.tos_reg = (invokable.dispatch_3(execution_ctx.stack[execution_ctx.stack_ptr], arg1, arg2))
 
             elif bytecode == Bytecodes.q_super_send_n:
                 invokable = method.get_inline_cache(current_bc_idx)
@@ -983,11 +1051,14 @@ def send_does_not_understand(receiver, selector, execution_ctx):
     # Remove all arguments and put them in the freshly allocated array
     i = number_of_arguments - 1
     while i >= 0:
-        value = execution_ctx.pop_1()
+        value = execution_ctx.stack[execution_ctx.stack_ptr]
+        if we_are_jitted():
+            execution_ctx.stack[execution_ctx.stack_ptr] = None
+        execution_ctx.stack_ptr -= 1
         arguments_array.set_indexable_field(i, value)
         i -= 1
 
-    execution_ctx.set_tos(lookup_and_send_3(receiver, selector, arguments_array, "doesNotUnderstand:arguments:"))
+    execution_ctx.stack[execution_ctx.stack_ptr] = (lookup_and_send_3(receiver, selector, arguments_array, "doesNotUnderstand:arguments:"))
     return execution_ctx.stack_ptr
 
 
@@ -1000,42 +1071,50 @@ def send_does_not_understand_tos(receiver, selector, execution_ctx):
     i = number_of_arguments - 1
     while i >= 0:
         if i == number_of_arguments - 1: # first iteration
-            value = execution_ctx.pop_1_tos1()
+            value = execution_ctx.tos_reg
+            execution_ctx.is_tos_reg_in_use = False
         else:
-            value = execution_ctx.pop_1()
+            value = execution_ctx.stack[execution_ctx.stack_ptr]
+            if we_are_jitted():
+                execution_ctx.stack[execution_ctx.stack_ptr] = None
+            execution_ctx.stack_ptr -= 1
         arguments_array.set_indexable_field(i, value)
         i -= 1
 
-    execution_ctx.set_tos(lookup_and_send_3(receiver, selector, arguments_array, "doesNotUnderstand:arguments:"))
+    execution_ctx.stack[execution_ctx.stack_ptr] = (lookup_and_send_3(receiver, selector, arguments_array, "doesNotUnderstand:arguments:"))
     return execution_ctx.stack_ptr
 
 
 def _invoke_invokable_slow_path(invokable, num_args, receiver, execution_ctx):
     if num_args == 1:
-        execution_ctx.set_tos(invokable.invoke_1(receiver))
+        execution_ctx.stack[execution_ctx.stack_ptr] = (invokable.invoke_1(receiver))
 
     elif num_args == 2:
-        arg = execution_ctx.pop_1()
-        execution_ctx.set_tos(invokable.invoke_2(receiver, arg))
+        arg = execution_ctx.stack[execution_ctx.stack_ptr]
+        if we_are_jitted():
+            execution_ctx.stack[execution_ctx.stack_ptr] = None
+        execution_ctx.stack_ptr -= 1
+        execution_ctx.stack[execution_ctx.stack_ptr] = (invokable.invoke_2(receiver, arg))
 
     elif num_args == 3:
         arg2, arg1 = execution_ctx.pop_2()
-        execution_ctx.set_tos(invokable.invoke_3(receiver, arg1, arg2))
+        execution_ctx.stack[execution_ctx.stack_ptr] = (invokable.invoke_3(receiver, arg1, arg2))
 
     else:
         invokable.invoke_n(execution_ctx)
 
 def _invoke_invokable_slow_path_tos(invokable, num_args, receiver, execution_ctx):
     if num_args == 1:
-        execution_ctx.set_tos_tos1(invokable.invoke_1(receiver))
+        execution_ctx.is_tos_reg_in_use = True; execution_ctx.tos_reg = (invokable.invoke_1(receiver))
 
     elif num_args == 2:
-        arg = execution_ctx.pop_1_tos1()
-        execution_ctx.set_tos(invokable.invoke_2(receiver, arg))
+        arg = execution_ctx.tos_reg
+        execution_ctx.is_tos_reg_in_use = False
+        execution_ctx.stack[execution_ctx.stack_ptr] = (invokable.invoke_2(receiver, arg))
 
     elif num_args == 3:
         arg2, arg1 = execution_ctx.pop_2_tos1()
-        execution_ctx.set_tos(invokable.invoke_3(receiver, arg1, arg2))
+        execution_ctx.stack[execution_ctx.stack_ptr] = (invokable.invoke_3(receiver, arg1, arg2))
 
     else:
         invokable.invoke_n(execution_ctx)
