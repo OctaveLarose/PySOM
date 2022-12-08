@@ -107,7 +107,7 @@ def _to_by_do(_ivkbl, execution_ctx):
 
     block_method = block.get_method()
 
-    self = execution_ctx.get_tos()
+    self = execution_ctx.stack[execution_ctx.stack_ptr]
 
     i = self.get_embedded_integer()
     if isinstance(limit, Double):
