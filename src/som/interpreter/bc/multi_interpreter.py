@@ -281,7 +281,15 @@ def interpret(method, frame, max_stack_size):
                     layout, signature, method, current_bc_idx, current_universe
                 )
 
-                arg2, arg1 = execution_ctx.pop_2()
+                arg2 = execution_ctx.stack[execution_ctx.stack_ptr]
+                if we_are_jitted():
+                    execution_ctx.stack[execution_ctx.stack_ptr] = None
+                execution_ctx.stack_ptr -= 1
+
+                arg1 = execution_ctx.stack[execution_ctx.stack_ptr]
+                if we_are_jitted():
+                    execution_ctx.stack[execution_ctx.stack_ptr] = None
+                execution_ctx.stack_ptr -= 1
                 execution_ctx.stack[execution_ctx.stack_ptr] = (dispatch_node.dispatch_3(receiver, arg1, arg2))
 
             elif bytecode == Bytecodes.send_n:
@@ -506,7 +514,15 @@ def interpret(method, frame, max_stack_size):
 
             elif bytecode == Bytecodes.q_super_send_3:
                 invokable = method.get_inline_cache(current_bc_idx)
-                arg2, arg1 = execution_ctx.pop_2()
+                arg2 = execution_ctx.stack[execution_ctx.stack_ptr]
+                if we_are_jitted():
+                    execution_ctx.stack[execution_ctx.stack_ptr] = None
+                execution_ctx.stack_ptr -= 1
+
+                arg1 = execution_ctx.stack[execution_ctx.stack_ptr]
+                if we_are_jitted():
+                    execution_ctx.stack[execution_ctx.stack_ptr] = None
+                execution_ctx.stack_ptr -= 1
                 execution_ctx.stack[execution_ctx.stack_ptr] = (invokable.dispatch_3(execution_ctx.stack[execution_ctx.stack_ptr], arg1, arg2))
 
             elif bytecode == Bytecodes.q_super_send_n:
@@ -739,7 +755,13 @@ def interpret(method, frame, max_stack_size):
                     layout, signature, method, current_bc_idx, current_universe
                 )
 
-                arg2, arg1 = execution_ctx.pop_2_tos1()
+                arg2 = execution_ctx.tos_reg
+                execution_ctx.is_tos_reg_in_use = False
+
+                arg1 = execution_ctx.stack[execution_ctx.stack_ptr]
+                if we_are_jitted():
+                    execution_ctx.stack[execution_ctx.stack_ptr] = None
+                execution_ctx.stack_ptr -= 1
                 execution_ctx.stack[execution_ctx.stack_ptr] = (dispatch_node.dispatch_3(receiver, arg1, arg2))
 
             elif bytecode == Bytecodes.send_n:
@@ -947,7 +969,13 @@ def interpret(method, frame, max_stack_size):
 
             elif bytecode == Bytecodes.q_super_send_3:
                 invokable = method.get_inline_cache(current_bc_idx)
-                arg2, arg1 = execution_ctx.pop_2_tos1()
+                arg2 = execution_ctx.tos_reg
+                execution_ctx.is_tos_reg_in_use = False
+
+                arg1 = execution_ctx.stack[execution_ctx.stack_ptr]
+                if we_are_jitted():
+                    execution_ctx.stack[execution_ctx.stack_ptr] = None
+                execution_ctx.stack_ptr -= 1
                 execution_ctx.is_tos_reg_in_use = True; execution_ctx.tos_reg = (invokable.dispatch_3(execution_ctx.stack[execution_ctx.stack_ptr], arg1, arg2))
 
             elif bytecode == Bytecodes.q_super_send_n:
@@ -1099,7 +1127,15 @@ def _invoke_invokable_slow_path(invokable, num_args, receiver, execution_ctx):
         execution_ctx.stack[execution_ctx.stack_ptr] = (invokable.invoke_2(receiver, arg))
 
     elif num_args == 3:
-        arg2, arg1 = execution_ctx.pop_2()
+        arg2 = execution_ctx.stack[execution_ctx.stack_ptr]
+        if we_are_jitted():
+            execution_ctx.stack[execution_ctx.stack_ptr] = None
+        execution_ctx.stack_ptr -= 1
+
+        arg1 = execution_ctx.stack[execution_ctx.stack_ptr]
+        if we_are_jitted():
+            execution_ctx.stack[execution_ctx.stack_ptr] = None
+        execution_ctx.stack_ptr -= 1
         execution_ctx.stack[execution_ctx.stack_ptr] = (invokable.invoke_3(receiver, arg1, arg2))
 
     else:
@@ -1115,7 +1151,13 @@ def _invoke_invokable_slow_path_tos(invokable, num_args, receiver, execution_ctx
         execution_ctx.stack[execution_ctx.stack_ptr] = (invokable.invoke_2(receiver, arg))
 
     elif num_args == 3:
-        arg2, arg1 = execution_ctx.pop_2_tos1()
+        arg2 = execution_ctx.tos_reg
+        execution_ctx.is_tos_reg_in_use = False
+
+        arg1 = execution_ctx.stack[execution_ctx.stack_ptr]
+        if we_are_jitted():
+            execution_ctx.stack[execution_ctx.stack_ptr] = None
+        execution_ctx.stack_ptr -= 1
         execution_ctx.stack[execution_ctx.stack_ptr] = (invokable.invoke_3(receiver, arg1, arg2))
 
     else:
