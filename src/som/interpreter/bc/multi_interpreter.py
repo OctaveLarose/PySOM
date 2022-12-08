@@ -1045,8 +1045,8 @@ def _do_super_send_tos(bytecode_index, method, execution_ctx):
     invokable = receiver_class.lookup_invokable(signature)
 
     num_args = invokable.get_number_of_signature_arguments()
-    receiver = execution_ctx.tos_reg if num_args - 1 == 0 else execution_ctx.stack[execution_ctx.stack_ptr - num_args]
-
+    offset = num_args - 1
+    receiver = execution_ctx.tos_reg if offset == 0 else execution_ctx.stack[execution_ctx.stack_ptr - offset + 1]
 
     if invokable:
         first = method.get_inline_cache(bytecode_index)
