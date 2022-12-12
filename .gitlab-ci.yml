@@ -52,29 +52,29 @@ build-and-test-interpreters:
         put ${PROJECT_FOLDER}/som-bc-interp.lz4 incoming/${CI_PIPELINE_ID}/
       EOF
 
-build-and-test-jit-bc:
-  stage: build-test
-  tags: [yuria2]
-  script:
-    # Setup
-    - export PROJECT_FOLDER=$(pwd)
-    - export PYTHONPATH=$PYTHONPATH:$PYPY_DIR:src
-    - export RPYTHON=$PYPY_DIR/rpython/bin/rpython
-    - export PATH=$PATH:/home/gitlab-runner/.local/pypy2.7-v7.3.5-linux64/bin
-    - export SOM_INTERP=BC
-    
-    # JIT Compiled Version
-    - $RPYTHON --batch -Ojit src/main_rpython.py
-    - ./som-bc-jit -cp Smalltalk TestSuite/TestHarness.som
-
-    # Package and Upload
-    - lz4 som-bc-jit som-bc-jit.lz4
-    
-    - |
-      sftp tmp-artifacts << EOF
-        -mkdir incoming/${CI_PIPELINE_ID}/
-        put ${PROJECT_FOLDER}/som-bc-jit.lz4 incoming/${CI_PIPELINE_ID}/
-      EOF
+#build-and-test-jit-bc:
+#  stage: build-test
+#  tags: [yuria2]
+#  script:
+#    # Setup
+#    - export PROJECT_FOLDER=$(pwd)
+#    - export PYTHONPATH=$PYTHONPATH:$PYPY_DIR:src
+#    - export RPYTHON=$PYPY_DIR/rpython/bin/rpython
+#    - export PATH=$PATH:/home/gitlab-runner/.local/pypy2.7-v7.3.5-linux64/bin
+#    - export SOM_INTERP=BC
+#
+#    # JIT Compiled Version
+#    - $RPYTHON --batch -Ojit src/main_rpython.py
+#    - ./som-bc-jit -cp Smalltalk TestSuite/TestHarness.som
+#
+#    # Package and Upload
+#    - lz4 som-bc-jit som-bc-jit.lz4
+#
+#    - |
+#      sftp tmp-artifacts << EOF
+#        -mkdir incoming/${CI_PIPELINE_ID}/
+#        put ${PROJECT_FOLDER}/som-bc-jit.lz4 incoming/${CI_PIPELINE_ID}/
+#      EOF
 
 build-and-test-jit-ast:
   stage: build-test
@@ -106,12 +106,12 @@ benchmark-y1:
   script:
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-ast-jit.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-ast-interp.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-bc-jit.lz4
+#    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-bc-jit.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-bc-interp.lz4
     
     - lz4 -d som-ast-jit.lz4    som-ast-jit
     - lz4 -d som-ast-interp.lz4 som-ast-interp
-    - lz4 -d som-bc-jit.lz4     som-bc-jit
+#    - lz4 -d som-bc-jit.lz4     som-bc-jit
     - lz4 -d som-bc-interp.lz4  som-bc-interp
 
     # Run Benchmarks
@@ -123,12 +123,12 @@ benchmark-y2:
   script:
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-ast-jit.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-ast-interp.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-bc-jit.lz4
+#    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-bc-jit.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-bc-interp.lz4
     
     - lz4 -d som-ast-jit.lz4    som-ast-jit
     - lz4 -d som-ast-interp.lz4 som-ast-interp
-    - lz4 -d som-bc-jit.lz4     som-bc-jit
+#    - lz4 -d som-bc-jit.lz4     som-bc-jit
     - lz4 -d som-bc-interp.lz4  som-bc-interp
 
     # Run Benchmarks
@@ -140,12 +140,12 @@ benchmark-y3:
   script:
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-ast-jit.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-ast-interp.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-bc-jit.lz4
+#    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-bc-jit.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-bc-interp.lz4
     
     - lz4 -d som-ast-jit.lz4    som-ast-jit
     - lz4 -d som-ast-interp.lz4 som-ast-interp
-    - lz4 -d som-bc-jit.lz4     som-bc-jit
+#    - lz4 -d som-bc-jit.lz4     som-bc-jit
     - lz4 -d som-bc-interp.lz4  som-bc-interp
 
     # Run Benchmarks
