@@ -91,9 +91,9 @@ def _to_do(rcvr, limit, block):
 
 
 def _to_by_do(_ivkbl, execution_ctx):
-    block = execution_ctx.pop_1_tos1()  # it's also None'd in the og
+    block = execution_ctx.pop_1_tos2()  # it's also None'd in the og
 
-    by_increment = execution_ctx.pop_1()
+    by_increment = execution_ctx.pop_1_tos1()
 
     limit = execution_ctx.pop_1()
 

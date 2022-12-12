@@ -44,10 +44,7 @@ def create_frame(
     frame = [_erase_obj(nilObject)] * size_frame
     make_sure_not_resized(frame)
 
-    if execution_ctx.is_tos_reg_in_use:
-        receiver = execution_ctx.read_stack_elem_tos1(num_args - 1)
-    else:
-        receiver = execution_ctx.read_stack_elem(num_args - 1)
+    receiver = execution_ctx.read_stack_elem_any_state(num_args - 1)
 
     assert num_args - 1 == len(arg_inner_access_reversed)  # num_args without rcvr
 
@@ -122,12 +119,7 @@ def _set_arguments_without_inner(
     frame_i = _FRAME_AND_INNER_FIRST_ARG
 
     while arg_i >= 0:
-        obj = None
-        if execution_ctx.is_tos_reg_in_use:
-            obj = execution_ctx.read_stack_elem_tos1(arg_i)
-        else:
-            obj = execution_ctx.read_stack_elem(arg_i)
-
+        obj = execution_ctx.read_stack_elem_any_state(arg_i)
         frame[frame_i] = _erase_obj(obj)
         frame_i += 1
         arg_i -= 1
@@ -146,10 +138,7 @@ def _set_arguments_with_inner(
     inner_i = _FRAME_AND_INNER_FIRST_ARG
 
     while arg_i >= 0:
-        if execution_ctx.is_tos_reg_in_use:
-            arg_val = execution_ctx.read_stack_elem_tos1(arg_i)
-        else:
-            arg_val = execution_ctx.read_stack_elem(arg_i)
+        arg_val = execution_ctx.read_stack_elem_any_state(arg_i)
 
         if arg_inner_access_reversed[arg_i]:
             inner[inner_i] = arg_val
@@ -161,18 +150,31 @@ def _set_arguments_with_inner(
 
 
 @jit.unroll_safe
-def stack_pop_old_arguments_and_push_result(execution_ctx, num_args, result):
-    if not execution_ctx.is_tos_reg_in_use:
+def stack_pop_old_arguments_and_push_result(execution_ctx, num_args, result): # TODO replace with execution_ctx.popN
+    if execution_ctx.state == 0:
         for _ in range(num_args):
             execution_ctx.stack[execution_ctx.stack_ptr] = None
             execution_ctx.stack_ptr -= 1
-        execution_ctx.stack_ptr += 1
+        execution_ctx.stack_ptr += 1  # TODO is this reachable?
         execution_ctx.stack[execution_ctx.stack_ptr] = result
-    else:
+
+    elif execution_ctx.state == 1:
         execution_ctx.set_tos_tos1(None)
         execution_ctx.pop_1_tos1()
 
         for _ in range(num_args - 1):
+            execution_ctx.set_tos(None)
+            execution_ctx.pop_1()
+        execution_ctx.push_1(result)
+
+    elif execution_ctx.state == 2:
+        execution_ctx.set_tos_tos1(None)
+        execution_ctx.pop_1_tos1()
+
+        execution_ctx.set_tos_tos1(None)
+        execution_ctx.pop_1_tos1()
+
+        for _ in range(num_args - 2):
             execution_ctx.set_tos(None)
             execution_ctx.pop_1()
         execution_ctx.push_1(result)
