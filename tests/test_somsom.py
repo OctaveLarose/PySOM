@@ -5,15 +5,8 @@ import pytest
     "test_name",
     [
         "All",
-        "Bounce",
-        "BubbleSort",
-        "DeltaBlue",
-        "Fannkuch",
-        "Json",
         "Mandelbrot",
-        "NBody",
         "Queens",
-        "Richards",
     ],
 )
 def test_somsom(test_name):
@@ -21,27 +14,26 @@ def test_somsom(test_name):
     core_lib_path = os.path.dirname(os.path.abspath(__file__)) + "/../core-lib/"
     args = [
         "-cp",
-        core_lib_path + "Smalltalk",
-        core_lib_path + "TestSuite/TestHarness.som",
-        core_lib_path + "SomSom/src/compiler",
-        core_lib_path + "SomSom/src/vm",
-        core_lib_path + "SomSom/src/vmobjects",
-        core_lib_path + "SomSom/src/interpreter",
-        core_lib_path + "SomSom/src/primitives",
-        "core-lib/SomSom/src/vm/MainLoadAll.som",
+        ":".join([core_lib_path + "Smalltalk",
+                 core_lib_path + "TestSuite",
+                 core_lib_path + "SomSom/src/compiler",
+                 core_lib_path + "SomSom/src/vm",
+                 core_lib_path + "SomSom/src/vmobjects",
+                 core_lib_path + "SomSom/src/interpreter",
+                 core_lib_path + "SomSom/src/primitives",
+                 ]),
+        core_lib_path + "SomSom/src/vm/Main.som",
         "-cp",
-        "Smalltalk",
-        "Examples/Benchmarks/LanguageFeatures",
-        "Examples/Benchmarks/BenchmarkHarness.som",
-        "--gc",
+        "../Smalltalk:../Examples/Benchmarks/LanguageFeatures",
+        "../Examples/Benchmarks/BenchmarkHarness.som",
         test_name,
-        "100",
-        "100"
+        "1",
+        "0",
+        "1"
     ]
 
     current_universe.interpret(args)
 
     assert current_universe.last_exit_code() == 0
-    # TODO check output better, currently this always succeeds
 
 from som.vm.current import current_universe
