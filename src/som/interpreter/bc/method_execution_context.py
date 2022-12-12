@@ -41,7 +41,7 @@ class MethodExecutionContext:
         self.stack_ptr -= 1
         return val
 
-    def pop_1_tos1(self): # TODO: these don't do the we_are_jitted setting to None thing. check if this impacts JIT perf
+    def pop_1_tos1(self):
         val = self.tos_reg
         self.state = 0
         return val
@@ -60,16 +60,14 @@ class MethodExecutionContext:
         else:
             return self.pop_1_tos2()
 
-    def pop_2(self):
+    def pop_2(self):  # could have a faster implem but not bothering for now
         return self.pop_1(), self.pop_1()
 
     def pop_2_tos1(self):
-        self.state = 0
-        return self.tos_reg, self.pop_1()
+        return self.pop_1_tos1(), self.pop_1()
 
     def pop_2_tos2(self):
-        self.state = 0
-        return self.tos_reg2, self.tos_reg
+        return self.pop_1_tos2(), self.pop_1_tos1()
 
     def get_tos(self):
         return self.stack[self.stack_ptr]
