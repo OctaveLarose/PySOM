@@ -51,6 +51,15 @@ class MethodExecutionContext:
         self.state = 1
         return val
 
+    # Slow path for pop_1.
+    def pop_1_any(self):
+        if self.state == 0:
+            return self.pop_1()
+        elif self.state == 1:
+            return self.pop_1_tos1()
+        else:
+            return self.pop_1_tos2()
+
     def pop_2(self):  # could have a faster implem but not bothering for now
         return self.pop_1(), self.pop_1()
 

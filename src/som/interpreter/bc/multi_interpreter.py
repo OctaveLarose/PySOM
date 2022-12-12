@@ -1393,7 +1393,7 @@ def _do_super_send_tos1(bytecode_index, method, execution_ctx):
             invokable, num_args, receiver, execution_ctx
         )
     else:
-        send_does_not_understand_tos1(
+        send_does_not_understand(
             receiver, invokable.get_signature(), execution_ctx
         )
 
@@ -1428,7 +1428,7 @@ def _do_super_send_tos2(bytecode_index, method, execution_ctx):
             invokable, num_args, receiver, execution_ctx
         )
     else:
-        send_does_not_understand_tos2(
+        send_does_not_understand(
             receiver, invokable.get_signature(), execution_ctx
         )
 
@@ -1441,52 +1441,10 @@ def send_does_not_understand(receiver, selector, execution_ctx):
     # Remove all arguments and put them in the freshly allocated array
     i = number_of_arguments - 1
     while i >= 0:
-        value = execution_ctx.pop_1()
+        value = execution_ctx.pop_1_any()
         arguments_array.set_indexable_field(i, value)
         i -= 1
 
-    execution_ctx.set_tos(lookup_and_send_3(receiver, selector, arguments_array, "doesNotUnderstand:arguments:"))
-    return execution_ctx.stack_ptr
-
-
-def send_does_not_understand_tos1(receiver, selector, execution_ctx):
-    # ignore self
-    number_of_arguments = selector.get_number_of_signature_arguments() - 1
-    arguments_array = Array.from_size(number_of_arguments)
-
-    # Remove all arguments and put them in the freshly allocated array
-    i = number_of_arguments - 1
-    while i >= 0:
-        if i == number_of_arguments - 1: # first iteration
-            value = execution_ctx.pop_1_tos1()
-        else:
-            value = execution_ctx.pop_1()
-        arguments_array.set_indexable_field(i, value)
-        i -= 1
-
-    execution_ctx.set_tos(lookup_and_send_3(receiver, selector, arguments_array, "doesNotUnderstand:arguments:"))
-    return execution_ctx.stack_ptr
-
-
-def send_does_not_understand_tos2(receiver, selector, execution_ctx):
-    # ignore self
-    number_of_arguments = selector.get_number_of_signature_arguments() - 1
-    arguments_array = Array.from_size(number_of_arguments)
-
-    # Remove all arguments and put them in the freshly allocated array
-    i = number_of_arguments - 1
-    while i >= 0:
-        if i == number_of_arguments - 1: # first iteration
-            value = execution_ctx.pop_1_tos2()
-        elif i == number_of_arguments - 2: # second iteration
-            value = execution_ctx.pop_1_tos1()
-        else:
-            value = execution_ctx.pop_1()
-        arguments_array.set_indexable_field(i, value)
-        i -= 1
-
-    # TODO not sure this is always a set_tos
-    assert execution_ctx.state == 0
     execution_ctx.set_tos(lookup_and_send_3(receiver, selector, arguments_array, "doesNotUnderstand:arguments:"))
     return execution_ctx.stack_ptr
 
