@@ -1354,9 +1354,20 @@ def _do_super_send(bytecode_index, method, execution_ctx):
         else:
             bc = Bytecodes.q_super_send_n
         method.set_bytecode(bytecode_index, bc)
-        _invoke_invokable_slow_path(
-            invokable, num_args, receiver, execution_ctx
-        )
+
+        if num_args == 1:
+            execution_ctx.set_tos(invokable.invoke_1(receiver))
+
+        elif num_args == 2:
+            arg = execution_ctx.pop_1()
+            execution_ctx.set_tos(invokable.invoke_2(receiver, arg))
+
+        elif num_args == 3:
+            arg2, arg1 = execution_ctx.pop_2()
+            execution_ctx.set_tos(invokable.invoke_3(receiver, arg1, arg2))
+
+        else:
+            invokable.invoke_n(execution_ctx)
     else:
         send_does_not_understand(
             receiver, invokable.get_signature(), execution_ctx
@@ -1389,9 +1400,20 @@ def _do_super_send_tos1(bytecode_index, method, execution_ctx):
         else:
             bc = Bytecodes.q_super_send_n
         method.set_bytecode(bytecode_index, bc)
-        _invoke_invokable_slow_path_tos1(
-            invokable, num_args, receiver, execution_ctx
-        )
+
+        if num_args == 1:
+            execution_ctx.set_tos_tos1(invokable.invoke_1(receiver))
+
+        elif num_args == 2:
+            arg = execution_ctx.pop_1_tos1()
+            execution_ctx.set_tos(invokable.invoke_2(receiver, arg))
+
+        elif num_args == 3:
+            arg2, arg1 = execution_ctx.pop_2_tos1()
+            execution_ctx.set_tos(invokable.invoke_3(receiver, arg1, arg2))
+
+        else:
+            invokable.invoke_n(execution_ctx)
     else:
         send_does_not_understand(
             receiver, invokable.get_signature(), execution_ctx
@@ -1424,9 +1446,20 @@ def _do_super_send_tos2(bytecode_index, method, execution_ctx):
         else:
             bc = Bytecodes.q_super_send_n
         method.set_bytecode(bytecode_index, bc)
-        _invoke_invokable_slow_path_tos2(
-            invokable, num_args, receiver, execution_ctx
-        )
+
+        if num_args == 1:
+            execution_ctx.set_tos_tos2(invokable.invoke_1(receiver))
+
+        elif num_args == 2:
+            arg = execution_ctx.pop_1_tos2()
+            execution_ctx.set_tos_tos1(invokable.invoke_2(receiver, arg))
+
+        elif num_args == 3:
+            arg2, arg1 = execution_ctx.pop_2_tos2()
+            execution_ctx.set_tos(invokable.invoke_3(receiver, arg1, arg2))
+
+        else:
+            invokable.invoke_n(execution_ctx)
     else:
         send_does_not_understand(
             receiver, invokable.get_signature(), execution_ctx
@@ -1447,52 +1480,6 @@ def send_does_not_understand(receiver, selector, execution_ctx):
 
     execution_ctx.set_tos(lookup_and_send_3(receiver, selector, arguments_array, "doesNotUnderstand:arguments:"))
     return execution_ctx.stack_ptr
-
-
-def _invoke_invokable_slow_path(invokable, num_args, receiver, execution_ctx):
-    if num_args == 1:
-        execution_ctx.set_tos(invokable.invoke_1(receiver))
-
-    elif num_args == 2:
-        arg = execution_ctx.pop_1()
-        execution_ctx.set_tos(invokable.invoke_2(receiver, arg))
-
-    elif num_args == 3:
-        arg2, arg1 = execution_ctx.pop_2()
-        execution_ctx.set_tos(invokable.invoke_3(receiver, arg1, arg2))
-
-    else:
-        invokable.invoke_n(execution_ctx)
-
-def _invoke_invokable_slow_path_tos1(invokable, num_args, receiver, execution_ctx):
-    if num_args == 1:
-        execution_ctx.set_tos_tos1(invokable.invoke_1(receiver))
-
-    elif num_args == 2:
-        arg = execution_ctx.pop_1_tos1()
-        execution_ctx.set_tos(invokable.invoke_2(receiver, arg))
-
-    elif num_args == 3:
-        arg2, arg1 = execution_ctx.pop_2_tos1()
-        execution_ctx.set_tos(invokable.invoke_3(receiver, arg1, arg2))
-
-    else:
-        invokable.invoke_n(execution_ctx)
-
-def _invoke_invokable_slow_path_tos2(invokable, num_args, receiver, execution_ctx):
-    if num_args == 1:
-        execution_ctx.set_tos_tos2(invokable.invoke_1(receiver))
-
-    elif num_args == 2:
-        arg = execution_ctx.pop_1_tos2()
-        execution_ctx.set_tos_tos1(invokable.invoke_2(receiver, arg))
-
-    elif num_args == 3:
-        arg2, arg1 = execution_ctx.pop_2_tos2()
-        execution_ctx.set_tos(invokable.invoke_3(receiver, arg1, arg2))
-
-    else:
-        invokable.invoke_n(execution_ctx)
 
 
 jitdriver = jit.JitDriver(
