@@ -1,5 +1,4 @@
 from rlib import jit
-from rlib.jit import we_are_jitted
 
 from som.primitives.integer_primitives import IntegerPrimitivesBase as _Base
 from som.vmobjects.double import Double
@@ -92,22 +91,15 @@ def _to_do(rcvr, limit, block):
 
 
 def _to_by_do(_ivkbl, execution_ctx):
-    block = execution_ctx.tos_reg
-    execution_ctx.is_tos_reg_in_use = False
+    block = execution_ctx.pop_1_tos1()  # it's also None'd in the og
 
-    by_increment = execution_ctx.stack[execution_ctx.stack_ptr]
-    if we_are_jitted():
-        execution_ctx.stack[execution_ctx.stack_ptr] = None
-    execution_ctx.stack_ptr -= 1
+    by_increment = execution_ctx.pop_1()
 
-    limit = execution_ctx.stack[execution_ctx.stack_ptr]
-    if we_are_jitted():
-        execution_ctx.stack[execution_ctx.stack_ptr] = None
-    execution_ctx.stack_ptr -= 1
+    limit = execution_ctx.pop_1()
 
     block_method = block.get_method()
 
-    self = execution_ctx.stack[execution_ctx.stack_ptr]
+    self = execution_ctx.get_tos()
 
     i = self.get_embedded_integer()
     if isinstance(limit, Double):

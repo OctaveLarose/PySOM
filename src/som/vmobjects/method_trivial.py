@@ -113,8 +113,7 @@ class GlobalRead(AbstractTrivialMethod):
 
     def invoke_n(self, execution_ctx):
         num_args = self._signature.get_number_of_signature_arguments()
-        offset = num_args - 1
-        rcvr = execution_ctx.tos_reg if offset == 0 else execution_ctx.stack[execution_ctx.stack_ptr - offset + 1]
+        rcvr = execution_ctx.read_stack_elem_tos1(num_args - 1)
         value = self.invoke_1(rcvr)
         return stack_pop_old_arguments_and_push_result(
             execution_ctx,
@@ -158,8 +157,7 @@ class FieldRead(AbstractTrivialMethod):
 
     def invoke_n(self, execution_ctx):
         num_args = self._signature.get_number_of_signature_arguments()
-        offset = num_args - 1
-        rcvr = execution_ctx.tos_reg if offset == 0 else execution_ctx.stack[execution_ctx.stack_ptr - offset + 1]
+        rcvr = execution_ctx.read_stack_elem_tos1(num_args - 1)
         value = self.invoke_1(rcvr)
         return stack_pop_old_arguments_and_push_result(
             execution_ctx,
@@ -204,10 +202,8 @@ class FieldWrite(AbstractTrivialMethod):
 
     def invoke_n(self, execution_ctx):
         num_args = self._signature.get_number_of_signature_arguments()
-        offset = num_args - 1
-        rcvr = execution_ctx.tos_reg if offset == 0 else execution_ctx.stack[execution_ctx.stack_ptr - offset + 1]
-        offset2 = num_args - self._arg_idx
-        arg = execution_ctx.tos_reg if offset2 == 0 else execution_ctx.stack[execution_ctx.stack_ptr - offset2 + 1]
+        rcvr = execution_ctx.read_stack_elem_tos1(num_args - 1)
+        arg = execution_ctx.read_stack_elem_tos1(num_args - self._arg_idx)
         self.invoke_2(rcvr, arg)
         return stack_pop_old_arguments_and_push_result(
             execution_ctx,
