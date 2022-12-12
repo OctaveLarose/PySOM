@@ -150,14 +150,17 @@ def _set_arguments_with_inner(
 
 
 @jit.unroll_safe
-def stack_pop_old_arguments_and_push_result(execution_ctx, num_args, result): # TODO replace with execution_ctx.popN
+def stack_pop_old_arguments_and_push_result(execution_ctx, num_args, result):
     # Will never be reached with state 0, since it's only called by invoke_n methods. Not sure why 1 is possible though
     assert execution_ctx.state != 0
 
+    # TODO change back because i liked it better before
+
     # previous code None'd values too, which I (potentially wrongfully) assume is irrelevant.
-    prev_state = execution_ctx.state
-    execution_ctx.stack_ptr -= (num_args - prev_state)
-    execution_ctx.push_1(result)
+    for _ in range(num_args):
+        execution_ctx.pop_1_any()
+    # execution_ctx.stack_ptr -= (num_args - prev_state)
+    execution_ctx.push_1_any(result)
 
     return 1 # mostly irrelevant, exists to make rpython happy by returning an int.
 
