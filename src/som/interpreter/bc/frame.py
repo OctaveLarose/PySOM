@@ -151,35 +151,15 @@ def _set_arguments_with_inner(
 
 @jit.unroll_safe
 def stack_pop_old_arguments_and_push_result(execution_ctx, num_args, result): # TODO replace with execution_ctx.popN
-    if execution_ctx.state == 0:
-        for _ in range(num_args):
-            execution_ctx.stack[execution_ctx.stack_ptr] = None
-            execution_ctx.stack_ptr -= 1
-        execution_ctx.stack_ptr += 1  # TODO is this reachable?
-        execution_ctx.stack[execution_ctx.stack_ptr] = result
+    # Will never be reached with state 0, since it's only called by invoke_n methods. Not sure why 1 is possible though
+    assert execution_ctx.state != 0
 
-    elif execution_ctx.state == 1:
-        execution_ctx.set_tos_tos1(None)
-        execution_ctx.pop_1_tos1()
+    # previous code None'd values too, which I (potentially wrongfully) assume is irrelevant.
+    prev_state = execution_ctx.state
+    execution_ctx.stack_ptr -= (num_args - prev_state)
+    execution_ctx.push_1(result)
 
-        for _ in range(num_args - 1):
-            execution_ctx.set_tos(None)
-            execution_ctx.pop_1()
-        execution_ctx.push_1(result)
-
-    elif execution_ctx.state == 2:
-        execution_ctx.set_tos_tos1(None)
-        execution_ctx.pop_1_tos1()
-
-        execution_ctx.set_tos_tos1(None)
-        execution_ctx.pop_1_tos1()
-
-        for _ in range(num_args - 2):
-            execution_ctx.set_tos(None)
-            execution_ctx.pop_1()
-        execution_ctx.push_1(result)
-
-    return execution_ctx.stack_ptr # mostly irrelevant, exists to make rpython happy by returning an int.
+    return 1 # mostly irrelevant, exists to make rpython happy by returning an int.
 
 @jit.unroll_safe
 def get_block_at(frame, ctx_level):

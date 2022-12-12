@@ -25,6 +25,15 @@ class MethodExecutionContext:
         self.tos_reg = self.tos_reg2
         self.tos_reg2 = val
 
+    # should be used as little as possible, slow path for push_1
+    def push_1_any(self, val):
+        if self.state == 0:
+            self.push_1(val)
+        elif self.state == 1:
+            self.push_1_tos1(val)
+        else:
+            self.push_1_tos2(val)
+
     def pop_1(self):
         val = self.stack[self.stack_ptr]
         if we_are_jitted():
