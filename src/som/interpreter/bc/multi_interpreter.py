@@ -19,6 +19,11 @@ def interpret(method, frame, max_stack_size):
     from som.vm.current import current_universe
 
     execution_ctx = MethodExecutionContext(max_stack_size)
+    execution_ctx1 = MethodExecutionContextTos1(max_stack_size)
+    execution_ctx2 = MethodExecutionContextTos2(max_stack_size)
+    execution_ctx3 = MethodExecutionContextTos3(max_stack_size)
+    execution_ctx4 = MethodExecutionContextTos4(max_stack_size)
+    execution_ctx5 = MethodExecutionContextTos5(max_stack_size)
 
     current_bc_idx = 0
 
