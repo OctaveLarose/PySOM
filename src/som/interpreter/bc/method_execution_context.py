@@ -64,38 +64,32 @@ class MethodExecutionContext:
         val = self.stack[self.stack_ptr]
         if we_are_jitted():
             self.stack[self.stack_ptr] = None
-        self.stack[self.stack_ptr] = None # TEMPORARILY SETTING ALL VALUES TO NONE AFTER POP TODO REMOVE
         self.stack_ptr -= 1
         return val
 
     def pop_1_tos1(self):
         self.state = 0
         val = self.tos_reg
-        self.tos_reg = None
         return val
 
     def pop_1_tos2(self):
         self.state = 1
         val = self.tos_reg2
-        self.tos_reg2 = None
         return val
 
     def pop_1_tos3(self):
         self.state = 2
         val = self.tos_reg3
-        self.tos_reg3 = None
         return val
 
     def pop_1_tos4(self):
         self.state = 3
         val = self.tos_reg4
-        self.tos_reg4 = None
         return val
 
     def pop_1_tos5(self):
         self.state = 4
         val = self.tos_reg5
-        self.tos_reg5 = None
         return val
 
     # Slow path for pop_1.
@@ -169,23 +163,18 @@ class MethodExecutionContext:
         self.stack[self.stack_ptr] = val
 
     def set_tos_tos1(self, val):
-        self.state = 1 # TODO Not sure that this is necessary, or that it should be.
         self.tos_reg = val
 
     def set_tos_tos2(self, val):
-        self.state = 2
         self.tos_reg2 = val
 
     def set_tos_tos3(self, val):
-        self.state = 3
         self.tos_reg3 = val
 
     def set_tos_tos4(self, val):
-        self.state = 4
         self.tos_reg4 = val
 
     def set_tos_tos5(self, val):
-        self.state = 5
         self.tos_reg5 = val
 
     def read_stack_elem(self, offset):
