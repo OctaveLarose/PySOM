@@ -150,6 +150,21 @@ class MethodExecutionContext:
     def get_tos_tos5(self):
         return self.tos_reg5
 
+    def get_tos_any(self):
+        if self.state == 0:
+            return self.get_tos()
+        elif self.state == 1:
+            return self.get_tos_tos1()
+        elif self.state == 2:
+            return self.get_tos_tos2()
+        elif self.state == 3:
+            return self.get_tos_tos3()
+        elif self.state == 4:
+            return self.get_tos_tos4()
+        elif self.state == 5:
+            return self.get_tos_tos5()
+        assert False, "Invalid state in get_tos_any"
+
     def set_tos(self, val):
         self.stack[self.stack_ptr] = val
 
