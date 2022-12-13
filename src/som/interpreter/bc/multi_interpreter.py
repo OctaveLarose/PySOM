@@ -1723,12 +1723,12 @@ def interpret(method, frame, max_stack_size):
             elif bytecode == Bytecodes.q_super_send_2:
                 invokable = method.get_inline_cache(current_bc_idx)
                 arg = execution_ctx.pop_1_tos3()
-                execution_ctx.set_tos_tos1(invokable.dispatch_2(execution_ctx.get_tos_tos2(), arg))
+                execution_ctx.set_tos_tos2(invokable.dispatch_2(execution_ctx.get_tos_tos2(), arg))
 
             elif bytecode == Bytecodes.q_super_send_3:
                 invokable = method.get_inline_cache(current_bc_idx)
                 arg2, arg1 = execution_ctx.pop_2_tos3()
-                execution_ctx.set_tos(invokable.dispatch_3(execution_ctx.get_tos_tos1(), arg1, arg2))
+                execution_ctx.set_tos_tos1(invokable.dispatch_3(execution_ctx.get_tos_tos1(), arg1, arg2))
 
             elif bytecode == Bytecodes.q_super_send_n:
                 invokable = method.get_inline_cache(current_bc_idx)
@@ -2150,12 +2150,12 @@ def interpret(method, frame, max_stack_size):
             elif bytecode == Bytecodes.q_super_send_2:
                 invokable = method.get_inline_cache(current_bc_idx)
                 arg = execution_ctx.pop_1_tos4()
-                execution_ctx.set_tos_tos1(invokable.dispatch_2(execution_ctx.get_tos_tos3(), arg))
+                execution_ctx.set_tos_tos3(invokable.dispatch_2(execution_ctx.get_tos_tos3(), arg))
 
             elif bytecode == Bytecodes.q_super_send_3:
                 invokable = method.get_inline_cache(current_bc_idx)
                 arg2, arg1 = execution_ctx.pop_2_tos4()
-                execution_ctx.set_tos(invokable.dispatch_3(execution_ctx.get_tos_tos2(), arg1, arg2))
+                execution_ctx.set_tos_tos2(invokable.dispatch_3(execution_ctx.get_tos_tos2(), arg1, arg2))
 
             elif bytecode == Bytecodes.q_super_send_n:
                 invokable = method.get_inline_cache(current_bc_idx)
@@ -2577,12 +2577,12 @@ def interpret(method, frame, max_stack_size):
             elif bytecode == Bytecodes.q_super_send_2:
                 invokable = method.get_inline_cache(current_bc_idx)
                 arg = execution_ctx.pop_1_tos5()
-                execution_ctx.set_tos_tos1(invokable.dispatch_2(execution_ctx.get_tos_tos4(), arg))
+                execution_ctx.set_tos_tos4(invokable.dispatch_2(execution_ctx.get_tos_tos4(), arg))
 
             elif bytecode == Bytecodes.q_super_send_3:
                 invokable = method.get_inline_cache(current_bc_idx)
                 arg2, arg1 = execution_ctx.pop_2_tos5()
-                execution_ctx.set_tos(invokable.dispatch_3(execution_ctx.get_tos_tos3(), arg1, arg2))
+                execution_ctx.set_tos_tos3(invokable.dispatch_3(execution_ctx.get_tos_tos3(), arg1, arg2))
 
             elif bytecode == Bytecodes.q_super_send_n:
                 invokable = method.get_inline_cache(current_bc_idx)
