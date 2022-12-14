@@ -36,7 +36,8 @@ def interpret(method, frame, max_stack_size):
         )
 
         bytecode = method.get_bytecode(current_bc_idx)
-        # print(bytecode_as_str(bytecode))
+        cache_state = method.get_cache_state(current_bc_idx)
+        print(bytecode_as_str(bytecode), cache_state)
 
         # Get the length of the current bytecode
         bc_length = bytecode_length(bytecode)
@@ -46,7 +47,7 @@ def interpret(method, frame, max_stack_size):
 
         promote(execution_ctx.stack_ptr)
 
-        if execution_ctx.state == 0:
+        if cache_state == 0:
             # print "BASE ", bytecode_as_str(bytecode)
 
             if bytecode == Bytecodes.halt:
@@ -261,7 +262,7 @@ def interpret(method, frame, max_stack_size):
                 dispatch_node.dispatch_n_bc(execution_ctx, receiver)
 
             elif bytecode == Bytecodes.super_send:
-                _do_super_send(current_bc_idx, method, execution_ctx)
+                _do_super_send(current_bc_idx, method, execution_ctx, cache_state)
 
             elif bytecode == Bytecodes.return_local:
                 return execution_ctx.get_tos()
@@ -473,7 +474,7 @@ def interpret(method, frame, max_stack_size):
             else:
                 _unknown_bytecode(bytecode, current_bc_idx, method)
 
-        elif execution_ctx.state == 1:
+        elif cache_state == 1:
             # print "TOS1 ", bytecode_as_str(bytecode)
 
             if bytecode == Bytecodes.halt:
@@ -688,7 +689,7 @@ def interpret(method, frame, max_stack_size):
                 dispatch_node.dispatch_n_bc(execution_ctx, receiver)
 
             elif bytecode == Bytecodes.super_send:
-                _do_super_send_tos1(current_bc_idx, method, execution_ctx)
+                _do_super_send_tos1(current_bc_idx, method, execution_ctx, cache_state)
 
             elif bytecode == Bytecodes.return_local:
                 return execution_ctx.get_tos_tos1()
@@ -899,7 +900,7 @@ def interpret(method, frame, max_stack_size):
                 next_bc_idx = current_bc_idx
             else:
                 _unknown_bytecode(bytecode, current_bc_idx, method)
-        elif execution_ctx.state == 2:
+        elif cache_state == 2:
             # print "TOS2 ", bytecode_as_str(bytecode)
 
             if bytecode == Bytecodes.halt:
@@ -1115,7 +1116,7 @@ def interpret(method, frame, max_stack_size):
                 dispatch_node.dispatch_n_bc(execution_ctx, receiver)
 
             elif bytecode == Bytecodes.super_send:
-                _do_super_send_tos2(current_bc_idx, method, execution_ctx)
+                _do_super_send_tos2(current_bc_idx, method, execution_ctx, cache_state)
 
             elif bytecode == Bytecodes.return_local:
                 return execution_ctx.get_tos_tos2()
@@ -1326,7 +1327,7 @@ def interpret(method, frame, max_stack_size):
                 next_bc_idx = current_bc_idx
             else:
                 _unknown_bytecode(bytecode, current_bc_idx, method)
-        elif execution_ctx.state == 3:
+        elif cache_state == 3:
             # print "TOS3 ", bytecode_as_str(bytecode)
 
             if bytecode == Bytecodes.halt:
@@ -1542,7 +1543,7 @@ def interpret(method, frame, max_stack_size):
                 dispatch_node.dispatch_n_bc(execution_ctx, receiver)
 
             elif bytecode == Bytecodes.super_send:
-                _do_super_send_tos3(current_bc_idx, method, execution_ctx)
+                _do_super_send_tos3(current_bc_idx, method, execution_ctx, cache_state)
 
             elif bytecode == Bytecodes.return_local:
                 return execution_ctx.get_tos_tos3()
@@ -1753,7 +1754,7 @@ def interpret(method, frame, max_stack_size):
                 next_bc_idx = current_bc_idx
             else:
                 _unknown_bytecode(bytecode, current_bc_idx, method)
-        elif execution_ctx.state == 4:
+        elif cache_state == 4:
             # print "TOS4 ", bytecode_as_str(bytecode)
 
             if bytecode == Bytecodes.halt:
@@ -1969,7 +1970,7 @@ def interpret(method, frame, max_stack_size):
                 dispatch_node.dispatch_n_bc(execution_ctx, receiver)
 
             elif bytecode == Bytecodes.super_send:
-                _do_super_send_tos4(current_bc_idx, method, execution_ctx)
+                _do_super_send_tos4(current_bc_idx, method, execution_ctx, cache_state)
 
             elif bytecode == Bytecodes.return_local:
                 return execution_ctx.get_tos_tos4()
@@ -2180,7 +2181,7 @@ def interpret(method, frame, max_stack_size):
                 next_bc_idx = current_bc_idx
             else:
                 _unknown_bytecode(bytecode, current_bc_idx, method)
-        elif execution_ctx.state == 5:
+        elif cache_state == 5:
             # print "TOS5 ", bytecode_as_str(bytecode)
 
             if bytecode == Bytecodes.halt:
@@ -2396,7 +2397,7 @@ def interpret(method, frame, max_stack_size):
                 dispatch_node.dispatch_n_bc(execution_ctx, receiver)
 
             elif bytecode == Bytecodes.super_send:
-                _do_super_send_tos5(current_bc_idx, method, execution_ctx)
+                _do_super_send_tos5(current_bc_idx, method, execution_ctx, cache_state)
 
             elif bytecode == Bytecodes.return_local:
                 return execution_ctx.get_tos_tos5()
@@ -2610,7 +2611,7 @@ def interpret(method, frame, max_stack_size):
             
         current_bc_idx = next_bc_idx
 
-def _do_super_send(bytecode_index, method, execution_ctx):
+def _do_super_send(bytecode_index, method, execution_ctx, cache_state):
     signature = method.get_constant(bytecode_index)
 
     receiver_class = method.get_holder().get_super_class()
@@ -2652,11 +2653,11 @@ def _do_super_send(bytecode_index, method, execution_ctx):
             invokable.invoke_n(execution_ctx)
     else:
         send_does_not_understand(
-            receiver, invokable.get_signature(), execution_ctx
+            receiver, invokable.get_signature(), execution_ctx, cache_state
         )
 
 
-def _do_super_send_tos1(bytecode_index, method, execution_ctx):
+def _do_super_send_tos1(bytecode_index, method, execution_ctx, cache_state):
     signature = method.get_constant(bytecode_index)
 
     receiver_class = method.get_holder().get_super_class()
@@ -2698,11 +2699,11 @@ def _do_super_send_tos1(bytecode_index, method, execution_ctx):
             invokable.invoke_n(execution_ctx)
     else:
         send_does_not_understand(
-            receiver, invokable.get_signature(), execution_ctx
+            receiver, invokable.get_signature(), execution_ctx, cache_state
         )
 
 
-def _do_super_send_tos2(bytecode_index, method, execution_ctx):
+def _do_super_send_tos2(bytecode_index, method, execution_ctx, cache_state):
     signature = method.get_constant(bytecode_index)
 
     receiver_class = method.get_holder().get_super_class()
@@ -2744,10 +2745,10 @@ def _do_super_send_tos2(bytecode_index, method, execution_ctx):
             invokable.invoke_n(execution_ctx)
     else:
         send_does_not_understand(
-            receiver, invokable.get_signature(), execution_ctx
+            receiver, invokable.get_signature(), execution_ctx, cache_state
         )
 
-def _do_super_send_tos3(bytecode_index, method, execution_ctx):
+def _do_super_send_tos3(bytecode_index, method, execution_ctx, cache_state):
     signature = method.get_constant(bytecode_index)
 
     receiver_class = method.get_holder().get_super_class()
@@ -2789,10 +2790,10 @@ def _do_super_send_tos3(bytecode_index, method, execution_ctx):
             invokable.invoke_n(execution_ctx)
     else:
         send_does_not_understand(
-            receiver, invokable.get_signature(), execution_ctx
+            receiver, invokable.get_signature(), execution_ctx, cache_state
         )
 
-def _do_super_send_tos4(bytecode_index, method, execution_ctx):
+def _do_super_send_tos4(bytecode_index, method, execution_ctx, cache_state):
     signature = method.get_constant(bytecode_index)
 
     receiver_class = method.get_holder().get_super_class()
@@ -2834,10 +2835,10 @@ def _do_super_send_tos4(bytecode_index, method, execution_ctx):
             invokable.invoke_n(execution_ctx)
     else:
         send_does_not_understand(
-            receiver, invokable.get_signature(), execution_ctx
+            receiver, invokable.get_signature(), execution_ctx, cache_state
         )
 
-def _do_super_send_tos5(bytecode_index, method, execution_ctx):
+def _do_super_send_tos5(bytecode_index, method, execution_ctx, cache_state):
     signature = method.get_constant(bytecode_index)
 
     receiver_class = method.get_holder().get_super_class()
@@ -2879,10 +2880,10 @@ def _do_super_send_tos5(bytecode_index, method, execution_ctx):
             invokable.invoke_n(execution_ctx)
     else:
         send_does_not_understand(
-            receiver, invokable.get_signature(), execution_ctx
+            receiver, invokable.get_signature(), execution_ctx, cache_state
         )
 
-def send_does_not_understand(receiver, selector, execution_ctx):
+def send_does_not_understand(receiver, selector, execution_ctx, cache_state):
     # ignore self
     number_of_arguments = selector.get_number_of_signature_arguments() - 1
     arguments_array = Array.from_size(number_of_arguments)
@@ -2897,17 +2898,17 @@ def send_does_not_understand(receiver, selector, execution_ctx):
     # in practice since it's a send with three args, it'll always reduce the state by 3.
     # so some of the following checks are redundant but amenable to adding more states.
     dnu_ret = lookup_and_send_3(receiver, selector, arguments_array, "doesNotUnderstand:arguments:")
-    if execution_ctx.state == 0:
+    if cache_state == 0:
         execution_ctx.set_tos(dnu_ret)
-    elif execution_ctx.state == 1:
+    elif cache_state == 1:
         execution_ctx.set_tos_tos1(dnu_ret)
-    elif execution_ctx.state == 2:
+    elif cache_state == 2:
         execution_ctx.set_tos_tos2(dnu_ret)
-    elif execution_ctx.state == 3:
+    elif cache_state == 3:
         execution_ctx.set_tos_tos3(dnu_ret)
-    elif execution_ctx.state == 4:
+    elif cache_state == 4:
         execution_ctx.set_tos_tos4(dnu_ret)
-    elif execution_ctx.state == 5:
+    elif cache_state == 5:
         execution_ctx.set_tos_tos5(dnu_ret)
 
     return execution_ctx.stack_ptr

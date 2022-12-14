@@ -77,7 +77,7 @@ class BcAbstractMethod(AbstractMethod):
         # Set the number of bytecodes in this method
         self._bytecodes = ["\x00"] * num_bytecodes
         self._inline_cache = [None] * num_bytecodes
-        self._stack_cache_state = [0] * num_bytecodes
+        self._stack_cache_states = [0] * num_bytecodes
 
         self._literals = literals
 
@@ -136,6 +136,13 @@ class BcAbstractMethod(AbstractMethod):
         assert 0 <= index < len(self._bytecodes)
         return ord(self._bytecodes[index])
 
+    @jit.elidable_promote("all")
+    def get_cache_state(self, index):
+        # Get the bytecode at the given index
+        assert 0 <= index < len(self._bytecodes)
+        return self._stack_cache_states[index]
+
+
     def get_bytecodes(self):
         """For testing purposes only"""
         return [ord(b) for b in self._bytecodes]
@@ -148,7 +155,7 @@ class BcAbstractMethod(AbstractMethod):
         self._bytecodes[index] = chr(value)
 
     def set_stack_cache_state(self, index, value):
-        self._stack_cache_state[index] = value
+        self._stack_cache_states[index] = value
 
     @jit.elidable
     def get_inline_cache(self, bytecode_index):
