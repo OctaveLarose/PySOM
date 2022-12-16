@@ -334,6 +334,7 @@ def interpret(method, frame, max_stack_size):
 
             elif bytecode == Bytecodes.jump:
                 next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_on_true_top_nil:
                 val = execution_ctx.get_tos()
@@ -342,6 +343,7 @@ def interpret(method, frame, max_stack_size):
                     execution_ctx.set_tos(nilObject)
                 else:
                     execution_ctx.pop_1()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_on_false_top_nil:
                 val = execution_ctx.get_tos()
@@ -350,18 +352,21 @@ def interpret(method, frame, max_stack_size):
                     execution_ctx.set_tos(nilObject)
                 else:
                     execution_ctx.pop_1()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_on_true_pop:
                 val = execution_ctx.get_tos()
                 if val is trueObject:
                     next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
                 execution_ctx.pop_1()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_on_false_pop:
                 val = execution_ctx.get_tos()
                 if val is falseObject:
                     next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
                 execution_ctx.pop_1()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_backward:
                 next_bc_idx = current_bc_idx - method.get_bytecode(current_bc_idx + 1)
@@ -372,6 +377,7 @@ def interpret(method, frame, max_stack_size):
                     method=method,
                     frame=frame,
                 )
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2:
                 next_bc_idx = (
@@ -379,6 +385,7 @@ def interpret(method, frame, max_stack_size):
                         + method.get_bytecode(current_bc_idx + 1)
                         + (method.get_bytecode(current_bc_idx + 2) << 8)
                 )
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_on_true_top_nil:
                 val = execution_ctx.get_tos()
@@ -391,6 +398,7 @@ def interpret(method, frame, max_stack_size):
                     execution_ctx.set_tos(nilObject)
                 else:
                     execution_ctx.pop_1()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_on_false_top_nil:
                 val = execution_ctx.get_tos()
@@ -403,6 +411,7 @@ def interpret(method, frame, max_stack_size):
                     execution_ctx.set_tos(nilObject)
                 else:
                     execution_ctx.pop_1()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_on_true_pop:
                 val = execution_ctx.get_tos()
@@ -413,6 +422,7 @@ def interpret(method, frame, max_stack_size):
                             + (method.get_bytecode(current_bc_idx + 2) << 8)
                     )
                 execution_ctx.pop_1()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_on_false_pop:
                 val = execution_ctx.get_tos()
@@ -423,6 +433,7 @@ def interpret(method, frame, max_stack_size):
                             + (method.get_bytecode(current_bc_idx + 2) << 8)
                     )
                 execution_ctx.pop_1()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_backward:
                 next_bc_idx = current_bc_idx - (
@@ -436,6 +447,7 @@ def interpret(method, frame, max_stack_size):
                     method=method,
                     frame=frame
                 )
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.q_super_send_1:
                 invokable = method.get_inline_cache(current_bc_idx)
@@ -761,6 +773,7 @@ def interpret(method, frame, max_stack_size):
 
             elif bytecode == Bytecodes.jump:
                 next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_on_true_top_nil:
                 val = execution_ctx.get_tos_tos1()
@@ -769,6 +782,7 @@ def interpret(method, frame, max_stack_size):
                     execution_ctx.set_tos_tos1(nilObject)
                 else:
                     execution_ctx.pop_1_tos1()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_on_false_top_nil:
                 val = execution_ctx.get_tos_tos1()
@@ -777,18 +791,21 @@ def interpret(method, frame, max_stack_size):
                     execution_ctx.set_tos_tos1(nilObject)
                 else:
                     execution_ctx.pop_1_tos1()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_on_true_pop:
                 val = execution_ctx.get_tos_tos1()
                 if val is trueObject:
                     next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
                 execution_ctx.pop_1_tos1()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_on_false_pop:
                 val = execution_ctx.get_tos_tos1()
                 if val is falseObject:
                     next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
                 execution_ctx.pop_1_tos1()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_backward:
                 next_bc_idx = current_bc_idx - method.get_bytecode(current_bc_idx + 1)
@@ -799,6 +816,7 @@ def interpret(method, frame, max_stack_size):
                     method=method,
                     frame=frame,
                 )
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2:
                 next_bc_idx = (
@@ -806,6 +824,7 @@ def interpret(method, frame, max_stack_size):
                         + method.get_bytecode(current_bc_idx + 1)
                         + (method.get_bytecode(current_bc_idx + 2) << 8)
                 )
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_on_true_top_nil:
                 val = execution_ctx.get_tos_tos1()
@@ -818,6 +837,7 @@ def interpret(method, frame, max_stack_size):
                     execution_ctx.set_tos_tos1(nilObject)
                 else:
                     execution_ctx.pop_1_tos1()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_on_false_top_nil:
                 val = execution_ctx.get_tos_tos1()
@@ -830,6 +850,7 @@ def interpret(method, frame, max_stack_size):
                     execution_ctx.set_tos_tos1(nilObject)
                 else:
                     execution_ctx.pop_1_tos1()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_on_true_pop:
                 val = execution_ctx.get_tos_tos1()
@@ -840,6 +861,7 @@ def interpret(method, frame, max_stack_size):
                             + (method.get_bytecode(current_bc_idx + 2) << 8)
                     )
                 execution_ctx.pop_1_tos1()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_on_false_pop:
                 val = execution_ctx.get_tos_tos1()
@@ -850,6 +872,7 @@ def interpret(method, frame, max_stack_size):
                             + (method.get_bytecode(current_bc_idx + 2) << 8)
                     )
                 execution_ctx.pop_1_tos1()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_backward:
                 next_bc_idx = current_bc_idx - (
@@ -863,6 +886,7 @@ def interpret(method, frame, max_stack_size):
                     method=method,
                     frame=frame
                 )
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.q_super_send_1:
                 invokable = method.get_inline_cache(current_bc_idx)
@@ -1188,6 +1212,7 @@ def interpret(method, frame, max_stack_size):
 
             elif bytecode == Bytecodes.jump:
                 next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_on_true_top_nil:
                 val = execution_ctx.get_tos_tos2()
@@ -1196,6 +1221,7 @@ def interpret(method, frame, max_stack_size):
                     execution_ctx.set_tos_tos2(nilObject)
                 else:
                     execution_ctx.pop_1_tos2()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_on_false_top_nil:
                 val = execution_ctx.get_tos_tos2()
@@ -1204,18 +1230,21 @@ def interpret(method, frame, max_stack_size):
                     execution_ctx.set_tos_tos2(nilObject)
                 else:
                     execution_ctx.pop_1_tos2()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_on_true_pop:
                 val = execution_ctx.get_tos_tos2()
                 if val is trueObject:
                     next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
                 execution_ctx.pop_1_tos2()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_on_false_pop:
                 val = execution_ctx.get_tos_tos2()
                 if val is falseObject:
                     next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
                 execution_ctx.pop_1_tos2()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_backward:
                 next_bc_idx = current_bc_idx - method.get_bytecode(current_bc_idx + 1)
@@ -1226,6 +1255,7 @@ def interpret(method, frame, max_stack_size):
                     method=method,
                     frame=frame,
                 )
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2:
                 next_bc_idx = (
@@ -1233,6 +1263,7 @@ def interpret(method, frame, max_stack_size):
                         + method.get_bytecode(current_bc_idx + 1)
                         + (method.get_bytecode(current_bc_idx + 2) << 8)
                 )
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_on_true_top_nil:
                 val = execution_ctx.get_tos_tos2()
@@ -1245,6 +1276,7 @@ def interpret(method, frame, max_stack_size):
                     execution_ctx.set_tos_tos2(nilObject)
                 else:
                     execution_ctx.pop_1_tos2()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_on_false_top_nil:
                 val = execution_ctx.get_tos_tos2()
@@ -1257,6 +1289,7 @@ def interpret(method, frame, max_stack_size):
                     execution_ctx.set_tos_tos2(nilObject)
                 else:
                     execution_ctx.pop_1_tos2()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_on_true_pop:
                 val = execution_ctx.get_tos_tos2()
@@ -1267,6 +1300,7 @@ def interpret(method, frame, max_stack_size):
                             + (method.get_bytecode(current_bc_idx + 2) << 8)
                     )
                 execution_ctx.pop_1_tos2()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_on_false_pop:
                 val = execution_ctx.get_tos_tos2()
@@ -1277,6 +1311,7 @@ def interpret(method, frame, max_stack_size):
                             + (method.get_bytecode(current_bc_idx + 2) << 8)
                     )
                 execution_ctx.pop_1_tos2()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_backward:
                 next_bc_idx = current_bc_idx - (
@@ -1290,6 +1325,7 @@ def interpret(method, frame, max_stack_size):
                     method=method,
                     frame=frame
                 )
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.q_super_send_1:
                 invokable = method.get_inline_cache(current_bc_idx)
@@ -1615,6 +1651,7 @@ def interpret(method, frame, max_stack_size):
 
             elif bytecode == Bytecodes.jump:
                 next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_on_true_top_nil:
                 val = execution_ctx.get_tos_tos3()
@@ -1623,6 +1660,7 @@ def interpret(method, frame, max_stack_size):
                     execution_ctx.set_tos_tos3(nilObject)
                 else:
                     execution_ctx.pop_1_tos3()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_on_false_top_nil:
                 val = execution_ctx.get_tos_tos3()
@@ -1631,18 +1669,21 @@ def interpret(method, frame, max_stack_size):
                     execution_ctx.set_tos_tos3(nilObject)
                 else:
                     execution_ctx.pop_1_tos3()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_on_true_pop:
                 val = execution_ctx.get_tos_tos3()
                 if val is trueObject:
                     next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
                 execution_ctx.pop_1_tos3()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_on_false_pop:
                 val = execution_ctx.get_tos_tos3()
                 if val is falseObject:
                     next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
                 execution_ctx.pop_1_tos3()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_backward:
                 next_bc_idx = current_bc_idx - method.get_bytecode(current_bc_idx + 1)
@@ -1653,6 +1694,7 @@ def interpret(method, frame, max_stack_size):
                     method=method,
                     frame=frame,
                 )
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2:
                 next_bc_idx = (
@@ -1660,6 +1702,7 @@ def interpret(method, frame, max_stack_size):
                         + method.get_bytecode(current_bc_idx + 1)
                         + (method.get_bytecode(current_bc_idx + 2) << 8)
                 )
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_on_true_top_nil:
                 val = execution_ctx.get_tos_tos3()
@@ -1672,6 +1715,7 @@ def interpret(method, frame, max_stack_size):
                     execution_ctx.set_tos_tos3(nilObject)
                 else:
                     execution_ctx.pop_1_tos3()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_on_false_top_nil:
                 val = execution_ctx.get_tos_tos3()
@@ -1684,6 +1728,7 @@ def interpret(method, frame, max_stack_size):
                     execution_ctx.set_tos_tos3(nilObject)
                 else:
                     execution_ctx.pop_1_tos3()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_on_true_pop:
                 val = execution_ctx.get_tos_tos3()
@@ -1694,6 +1739,7 @@ def interpret(method, frame, max_stack_size):
                             + (method.get_bytecode(current_bc_idx + 2) << 8)
                     )
                 execution_ctx.pop_1_tos3()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_on_false_pop:
                 val = execution_ctx.get_tos_tos3()
@@ -1704,6 +1750,7 @@ def interpret(method, frame, max_stack_size):
                             + (method.get_bytecode(current_bc_idx + 2) << 8)
                     )
                 execution_ctx.pop_1_tos3()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_backward:
                 next_bc_idx = current_bc_idx - (
@@ -1717,6 +1764,7 @@ def interpret(method, frame, max_stack_size):
                     method=method,
                     frame=frame
                 )
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.q_super_send_1:
                 invokable = method.get_inline_cache(current_bc_idx)
@@ -2042,6 +2090,7 @@ def interpret(method, frame, max_stack_size):
 
             elif bytecode == Bytecodes.jump:
                 next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_on_true_top_nil:
                 val = execution_ctx.get_tos_tos4()
@@ -2050,6 +2099,7 @@ def interpret(method, frame, max_stack_size):
                     execution_ctx.set_tos_tos4(nilObject)
                 else:
                     execution_ctx.pop_1_tos4()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_on_false_top_nil:
                 val = execution_ctx.get_tos_tos4()
@@ -2058,18 +2108,21 @@ def interpret(method, frame, max_stack_size):
                     execution_ctx.set_tos_tos4(nilObject)
                 else:
                     execution_ctx.pop_1_tos4()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_on_true_pop:
                 val = execution_ctx.get_tos_tos4()
                 if val is trueObject:
                     next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
                 execution_ctx.pop_1_tos4()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_on_false_pop:
                 val = execution_ctx.get_tos_tos4()
                 if val is falseObject:
                     next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
                 execution_ctx.pop_1_tos4()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_backward:
                 next_bc_idx = current_bc_idx - method.get_bytecode(current_bc_idx + 1)
@@ -2080,6 +2133,7 @@ def interpret(method, frame, max_stack_size):
                     method=method,
                     frame=frame,
                 )
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2:
                 next_bc_idx = (
@@ -2087,6 +2141,7 @@ def interpret(method, frame, max_stack_size):
                         + method.get_bytecode(current_bc_idx + 1)
                         + (method.get_bytecode(current_bc_idx + 2) << 8)
                 )
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_on_true_top_nil:
                 val = execution_ctx.get_tos_tos4()
@@ -2099,6 +2154,7 @@ def interpret(method, frame, max_stack_size):
                     execution_ctx.set_tos_tos4(nilObject)
                 else:
                     execution_ctx.pop_1_tos4()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_on_false_top_nil:
                 val = execution_ctx.get_tos_tos4()
@@ -2111,6 +2167,7 @@ def interpret(method, frame, max_stack_size):
                     execution_ctx.set_tos_tos4(nilObject)
                 else:
                     execution_ctx.pop_1_tos4()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_on_true_pop:
                 val = execution_ctx.get_tos_tos4()
@@ -2121,6 +2178,7 @@ def interpret(method, frame, max_stack_size):
                             + (method.get_bytecode(current_bc_idx + 2) << 8)
                     )
                 execution_ctx.pop_1_tos4()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_on_false_pop:
                 val = execution_ctx.get_tos_tos4()
@@ -2131,6 +2189,7 @@ def interpret(method, frame, max_stack_size):
                             + (method.get_bytecode(current_bc_idx + 2) << 8)
                     )
                 execution_ctx.pop_1_tos4()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_backward:
                 next_bc_idx = current_bc_idx - (
@@ -2144,6 +2203,7 @@ def interpret(method, frame, max_stack_size):
                     method=method,
                     frame=frame
                 )
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.q_super_send_1:
                 invokable = method.get_inline_cache(current_bc_idx)
@@ -2469,6 +2529,7 @@ def interpret(method, frame, max_stack_size):
 
             elif bytecode == Bytecodes.jump:
                 next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_on_true_top_nil:
                 val = execution_ctx.get_tos_tos5()
@@ -2477,6 +2538,7 @@ def interpret(method, frame, max_stack_size):
                     execution_ctx.set_tos_tos5(nilObject)
                 else:
                     execution_ctx.pop_1_tos5()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_on_false_top_nil:
                 val = execution_ctx.get_tos_tos5()
@@ -2485,18 +2547,21 @@ def interpret(method, frame, max_stack_size):
                     execution_ctx.set_tos_tos5(nilObject)
                 else:
                     execution_ctx.pop_1_tos5()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_on_true_pop:
                 val = execution_ctx.get_tos_tos5()
                 if val is trueObject:
                     next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
                 execution_ctx.pop_1_tos5()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_on_false_pop:
                 val = execution_ctx.get_tos_tos5()
                 if val is falseObject:
                     next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
                 execution_ctx.pop_1_tos5()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump_backward:
                 next_bc_idx = current_bc_idx - method.get_bytecode(current_bc_idx + 1)
@@ -2507,6 +2572,7 @@ def interpret(method, frame, max_stack_size):
                     method=method,
                     frame=frame,
                 )
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2:
                 next_bc_idx = (
@@ -2514,6 +2580,7 @@ def interpret(method, frame, max_stack_size):
                         + method.get_bytecode(current_bc_idx + 1)
                         + (method.get_bytecode(current_bc_idx + 2) << 8)
                 )
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_on_true_top_nil:
                 val = execution_ctx.get_tos_tos5()
@@ -2526,6 +2593,7 @@ def interpret(method, frame, max_stack_size):
                     execution_ctx.set_tos_tos5(nilObject)
                 else:
                     execution_ctx.pop_1_tos5()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_on_false_top_nil:
                 val = execution_ctx.get_tos_tos5()
@@ -2538,6 +2606,7 @@ def interpret(method, frame, max_stack_size):
                     execution_ctx.set_tos_tos5(nilObject)
                 else:
                     execution_ctx.pop_1_tos5()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_on_true_pop:
                 val = execution_ctx.get_tos_tos5()
@@ -2548,6 +2617,7 @@ def interpret(method, frame, max_stack_size):
                             + (method.get_bytecode(current_bc_idx + 2) << 8)
                     )
                 execution_ctx.pop_1_tos5()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_on_false_pop:
                 val = execution_ctx.get_tos_tos5()
@@ -2558,6 +2628,7 @@ def interpret(method, frame, max_stack_size):
                             + (method.get_bytecode(current_bc_idx + 2) << 8)
                     )
                 execution_ctx.pop_1_tos5()
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.jump2_backward:
                 next_bc_idx = current_bc_idx - (
@@ -2571,6 +2642,7 @@ def interpret(method, frame, max_stack_size):
                     method=method,
                     frame=frame
                 )
+                execution_ctx.set_state_to_canonical(cache_state)
 
             elif bytecode == Bytecodes.q_super_send_1:
                 invokable = method.get_inline_cache(current_bc_idx)
