@@ -3,6 +3,8 @@ from rlib.jit import we_are_jitted
 
 # the *_tos1 methods should only be invoked when is_tos_reg_in_use is True, the normal methods when False
 class MethodExecutionContext:
+    CANONICAL_STATE = 2
+
     def __init__(self, max_stack_size):
         self.stack = [None] * max_stack_size
         self.stack_ptr = -1
@@ -244,3 +246,42 @@ class MethodExecutionContext:
         elif self.state == 5:
             return self.read_stack_elem_tos5(offset)
         assert False, "Invalid state in read_stack_elem"
+
+    def set_state_to_canonical(self, current_cache_state):
+        register_values = [None, self.tos_reg, self.tos_reg2, self.tos_reg3, self.tos_reg4, self.tos_reg5]
+        # the None is just so I can have a 1-based indexing for clarity while writing the algorithm.
+        # TODO remove that once functional
+
+        if current_cache_state > self.CANONICAL_STATE:
+            diff = current_cache_state - self.CANONICAL_STATE
+
+            self.stack_ptr += diff
+            for i in range(diff):
+                self.stack[self.stack_ptr - i] = register_values[diff - i]
+            self.tos_reg = register_values[diff + 1]
+            self.tos_reg2 = register_values[diff + 2]
+
+            # if diff == 3: # 5 -> 2
+            #     self.stack_ptr += 3
+            #     self.stack[self.stack_ptr - 2] = self.tos_reg
+            #     self.stack[self.stack_ptr - 1] = self.tos_reg2
+            #     self.stack[self.stack_ptr] = self.tos_reg3
+            #     self.tos_reg = self.tos_reg4
+            #     self.tos_reg2 = self.tos_reg5
+            #
+            # if diff == 1:
+            #     self.stack_ptr += 1
+            #     self.stack[self.stack_ptr] = self.tos_reg
+            #     self.tos_reg = self.tos_reg2
+            #     self.tos_reg2 = self.tos_reg3
+        elif current_cache_state < self.CANONICAL_STATE:
+            diff = self.CANONICAL_STATE - current_cache_state
+
+            if diff == 2:
+                self.tos_reg2 = self.stack[self.stack_ptr]
+                self.tos_reg = self.stack[self.stack_ptr - 1]
+                self.stack_ptr -= 2
+            elif diff == 1:
+                self.tos_reg2 = self.tos_reg
+                self.tos_reg = self.stack[self.stack_ptr]
+                self.stack_ptr -= 1
