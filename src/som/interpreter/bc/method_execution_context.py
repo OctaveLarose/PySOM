@@ -260,20 +260,6 @@ class MethodExecutionContext:
                 self.stack[self.stack_ptr - i] = register_values[diff - i]
             self.tos_reg = register_values[diff + 1]
             self.tos_reg2 = register_values[diff + 2]
-
-            # if diff == 3: # 5 -> 2
-            #     self.stack_ptr += 3
-            #     self.stack[self.stack_ptr - 2] = self.tos_reg
-            #     self.stack[self.stack_ptr - 1] = self.tos_reg2
-            #     self.stack[self.stack_ptr] = self.tos_reg3
-            #     self.tos_reg = self.tos_reg4
-            #     self.tos_reg2 = self.tos_reg5
-            #
-            # if diff == 1:
-            #     self.stack_ptr += 1
-            #     self.stack[self.stack_ptr] = self.tos_reg
-            #     self.tos_reg = self.tos_reg2
-            #     self.tos_reg2 = self.tos_reg3
         elif current_cache_state < self.CANONICAL_STATE:
             diff = self.CANONICAL_STATE - current_cache_state
 
@@ -285,3 +271,9 @@ class MethodExecutionContext:
                 self.tos_reg2 = self.tos_reg
                 self.tos_reg = self.stack[self.stack_ptr]
                 self.stack_ptr -= 1
+
+        # surprisingly unnecessary.
+        # if self.stack_ptr < -1:
+        #     self.stack_ptr = -1
+
+        self.state = self.CANONICAL_STATE
