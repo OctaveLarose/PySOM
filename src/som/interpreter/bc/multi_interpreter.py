@@ -482,17 +482,17 @@ def interpret(method, frame, max_stack_size):
 
         elif bytecode == Bytecodes.q_super_send_1:
             invokable = method.get_inline_cache(current_bc_idx)
-            set_tos(execution_ctx, invokable.dispatch_1(get_tos(execution_ctx)))
+            execution_ctx.set_tos_any(invokable.dispatch_1(execution_ctx.get_tos_any()))
 
         elif bytecode == Bytecodes.q_super_send_2:
             invokable = method.get_inline_cache(current_bc_idx)
             arg = pop_1(execution_ctx)
-            set_tos(execution_ctx, invokable.dispatch_2(get_tos(execution_ctx), arg))
+            execution_ctx.set_tos_any(invokable.dispatch_2(execution_ctx.get_tos_any(), arg))
 
         elif bytecode == Bytecodes.q_super_send_3:
             invokable = method.get_inline_cache(current_bc_idx)
             arg2, arg1 = pop_2(execution_ctx)
-            set_tos(execution_ctx, invokable.dispatch_3(get_tos(execution_ctx), arg1, arg2))
+            execution_ctx.set_tos_any(invokable.dispatch_3(execution_ctx.get_tos_any(), arg1, arg2))
 
         elif bytecode == Bytecodes.q_super_send_n:
             invokable = method.get_inline_cache(current_bc_idx)
