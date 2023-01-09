@@ -13,7 +13,7 @@ def pop_1(execution_ctx): # TODO should consider adding back the we_are_jitted c
     return val
 
 def pop_2(execution_ctx):  # could have a slightly faster implem by inlining, maybe?
-    return execution_ctx.pop_1(), execution_ctx.pop_1()
+    return pop_1(execution_ctx), pop_1(execution_ctx)
 
 
 def set_tos(execution_ctx, val):
