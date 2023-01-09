@@ -54,6 +54,8 @@ def interpret(method, frame, max_stack_size):
             pop_1 = basic.pop_1
             pop_2 = basic.pop_2
             set_tos = basic.set_tos
+            set_tos_minus_1 = basic.set_tos
+            set_tos_minus_2 = basic.set_tos
             read_stack_elem = basic.read_stack_elem
         elif execution_ctx.state == 1:
             get_tos = one.get_tos
@@ -61,6 +63,8 @@ def interpret(method, frame, max_stack_size):
             pop_1 = one.pop_1
             pop_2 = one.pop_2
             set_tos = one.set_tos
+            set_tos_minus_1 = basic.set_tos
+            set_tos_minus_2 = basic.set_tos
             read_stack_elem = one.read_stack_elem
         elif execution_ctx.state == 2:
             get_tos = two.get_tos
@@ -68,6 +72,8 @@ def interpret(method, frame, max_stack_size):
             pop_1 = two.pop_1
             pop_2 = two.pop_2
             set_tos = two.set_tos
+            set_tos_minus_1 = one.set_tos
+            set_tos_minus_2 = basic.set_tos
             read_stack_elem = two.read_stack_elem
         elif execution_ctx.state == 3:
             get_tos = three.get_tos
@@ -75,6 +81,8 @@ def interpret(method, frame, max_stack_size):
             pop_1 = three.pop_1
             pop_2 = three.pop_2
             set_tos = three.set_tos
+            set_tos_minus_1 = two.set_tos
+            set_tos_minus_2 = one.set_tos
             read_stack_elem = three.read_stack_elem
         elif execution_ctx.state == 4:
             get_tos = four.get_tos
@@ -82,6 +90,8 @@ def interpret(method, frame, max_stack_size):
             pop_1 = four.pop_1
             pop_2 = four.pop_2
             set_tos = four.set_tos
+            set_tos_minus_1 = three.set_tos
+            set_tos_minus_2 = two.set_tos
             read_stack_elem = four.read_stack_elem
         else:
             get_tos = five.get_tos
@@ -89,6 +99,8 @@ def interpret(method, frame, max_stack_size):
             pop_1 = five.pop_1
             pop_2 = five.pop_2
             set_tos = five.set_tos
+            set_tos_minus_1 = four.set_tos
+            set_tos_minus_2 = three.set_tos
             read_stack_elem = five.read_stack_elem
         
             # print "BASE ", bytecode_as_str(bytecode)
@@ -274,7 +286,7 @@ def interpret(method, frame, max_stack_size):
                 )
 
             arg = pop_1(execution_ctx)
-            execution_ctx.set_tos_any(dispatch_node.dispatch_2(receiver, arg))
+            set_tos_minus_1(execution_ctx, dispatch_node.dispatch_2(receiver, arg))
 
         elif bytecode == Bytecodes.send_3:
             signature = method.get_constant(current_bc_idx)
@@ -286,7 +298,7 @@ def interpret(method, frame, max_stack_size):
             )
 
             arg2, arg1 = pop_2(execution_ctx)
-            execution_ctx.set_tos_any(dispatch_node.dispatch_3(receiver, arg1, arg2))
+            set_tos_minus_2(execution_ctx, dispatch_node.dispatch_3(receiver, arg1, arg2))
 
         elif bytecode == Bytecodes.send_n:
             signature = method.get_constant(current_bc_idx)
