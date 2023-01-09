@@ -14,49 +14,31 @@ class MethodExecutionContext:
         self.tos_reg5 = None
         self.state = 0
 
-    def push_1(self, val):
-        self.tos_reg = val
-        self.state = 1
-
-    def push_1_tos1(self, val):
-        self.tos_reg2 = val
-        self.state = 2
-
-    def push_1_tos2(self, val):
-        self.tos_reg3 = val
-        self.state = 3
-
-    def push_1_tos3(self, val):
-        self.tos_reg4 = val
-        self.state = 4
-
-    def push_1_tos4(self, val):
-        self.tos_reg5 = val
-        self.state = 5
-
-    def push_1_tos5(self, val):
-        self.stack_ptr += 1
-        self.stack[self.stack_ptr] = self.tos_reg
-        self.tos_reg = self.tos_reg2
-        self.tos_reg2 = self.tos_reg3
-        self.tos_reg3 = self.tos_reg4
-        self.tos_reg4 = self.tos_reg5
-        self.tos_reg5 = val
-
     # should be used as little as possible, slow path for push_1
     def push_1_any(self, val):
         if self.state == 0:
-            self.push_1(val)
+            self.tos_reg = val
+            self.state = 1
         elif self.state == 1:
-            self.push_1_tos1(val)
+            self.tos_reg2 = val
+            self.state = 2
         elif self.state == 2:
-            self.push_1_tos2(val)
+            self.tos_reg3 = val
+            self.state = 3
         elif self.state == 3:
-            self.push_1_tos3(val)
+            self.tos_reg4 = val
+            self.state = 4
         elif self.state == 4:
-            self.push_1_tos4(val)
+            self.tos_reg5 = val
+            self.state = 5
         elif self.state == 5:
-            self.push_1_tos5(val)
+            self.stack_ptr += 1
+            self.stack[self.stack_ptr] = self.tos_reg
+            self.tos_reg = self.tos_reg2
+            self.tos_reg2 = self.tos_reg3
+            self.tos_reg3 = self.tos_reg4
+            self.tos_reg4 = self.tos_reg5
+            self.tos_reg5 = val
         else:
             assert False, "Invalid state in push_1"
 
@@ -126,37 +108,19 @@ class MethodExecutionContext:
     def pop_2_tos5(self):
         return self.pop_1_tos5(), self.pop_1_tos4()
 
-    def get_tos(self):
-        return self.stack[self.stack_ptr]
-
-    def get_tos_tos1(self):
-        return self.tos_reg
-
-    def get_tos_tos2(self):
-        return self.tos_reg2
-
-    def get_tos_tos3(self):
-        return self.tos_reg3
-
-    def get_tos_tos4(self):
-        return self.tos_reg4
-
-    def get_tos_tos5(self):
-        return self.tos_reg5
-
     def get_tos_any(self):
         if self.state == 0:
-            return self.get_tos()
+            return self.stack[self.stack_ptr]
         elif self.state == 1:
-            return self.get_tos_tos1()
+            return self.tos_reg
         elif self.state == 2:
-            return self.get_tos_tos2()
+            return self.tos_reg2
         elif self.state == 3:
-            return self.get_tos_tos3()
+            return self.tos_reg3
         elif self.state == 4:
-            return self.get_tos_tos4()
+            return self.tos_reg4
         elif self.state == 5:
-            return self.get_tos_tos5()
+            return self.tos_reg5
         assert False, "Invalid state in get_tos_any"
 
     def set_tos(self, val):
