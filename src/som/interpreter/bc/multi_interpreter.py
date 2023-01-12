@@ -1,11 +1,11 @@
 from rlib import jit
-from rlib.jit import promote, we_are_jitted
+from rlib.jit import promote
 from som.interpreter.ast.frame import read_frame, FRAME_AND_INNER_RCVR_IDX, read_inner, get_inner_as_context, \
     write_frame, write_inner
 from som.interpreter.ast.nodes.dispatch import GenericDispatchNode, CachedDispatchNode
-from som.interpreter.bc.bytecodes import bytecode_length, Bytecodes, bytecode_as_str
+from som.interpreter.bc.bytecodes import bytecode_length, Bytecodes
 from som.interpreter.bc.frame import get_block_at, get_self_dynamically
-from som.interpreter.bc import one, two, three, four, five, basic
+from som.interpreter.bc.stack_states import five, four, two, one, basic, three
 from som.interpreter.bc.method_execution_context import MethodExecutionContext
 from som.interpreter.bc.base_interpreter import get_printable_location, get_self, _lookup, \
     _update_object_and_invalidate_old_caches, _do_return_non_local, _not_yet_implemented, _unknown_bytecode

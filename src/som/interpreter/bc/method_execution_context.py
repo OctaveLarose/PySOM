@@ -1,5 +1,4 @@
-from rlib.jit import we_are_jitted
-from som.interpreter.bc import basic, one, two, three, four, five
+from som.interpreter.bc.stack_states import five, four, two, one, basic, three
 
 
 # the *_tos1 methods should only be invoked when is_tos_reg_in_use is True, the normal methods when False
