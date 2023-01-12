@@ -46,12 +46,18 @@ _NUM_LAST_BYTECODES = 4
 
 
 class MethodGenerationContext(MethodGenerationContextBase):
+    MAX_CACHE_LEVEL = 5
+
     def __init__(self, universe, holder, outer):
         MethodGenerationContextBase.__init__(self, universe, holder, outer)
 
         self._literals = []
         self._finished = False
         self._bytecode = []
+        self._stack_caching_states = []
+
+        # used during parsing to store the state after a bytecode is emitted
+        self.cache_state_after_previous_bc = None
 
         # keep a list of arguments and locals for easy access
         # when patching bytecodes on method completion
@@ -64,6 +70,7 @@ class MethodGenerationContext(MethodGenerationContextBase):
 
         self.max_stack_depth = 0
         self._current_stack_depth = 0
+        self._current_stack_state = 0
 
     def get_number_of_locals(self):
         return len(self._local_list)
@@ -173,6 +180,7 @@ class MethodGenerationContext(MethodGenerationContextBase):
         i = 0
         for bytecode in self._bytecode:
             meth.set_bytecode(i, bytecode)
+            meth.set_stack_cache_state(i, self._stack_caching_states[i])
             i += 1
 
         # return the method - the holder field is to be set later on!
@@ -276,21 +284,53 @@ class MethodGenerationContext(MethodGenerationContextBase):
 
     def add_bytecode(self, bytecode, stack_effect):
         self._current_stack_depth += stack_effect
+
         if self._current_stack_depth > self.max_stack_depth:
             self.max_stack_depth = self._current_stack_depth
 
         self._bytecode.append(bytecode)
+
+        # if self.signature.__str__() == "#initialize:":
+        #     print(bytecode_as_str(bytecode))
+        #     if stack_effect == -1:
+        #         print(len(self._bytecode) - 1, len(self._stack_caching_states))
+        #         print("Bp")
+
+        self.add_stack_cache_state(self._current_stack_state)
+        self._current_stack_state += stack_effect
+        if self._current_stack_state > self.MAX_CACHE_LEVEL:
+            self._current_stack_state = self.MAX_CACHE_LEVEL
+        elif self._current_stack_state < 0:
+            self._current_stack_state = 0
+
         self._last_4_bytecodes[0] = self._last_4_bytecodes[1]
         self._last_4_bytecodes[1] = self._last_4_bytecodes[2]
         self._last_4_bytecodes[2] = self._last_4_bytecodes[3]
         self._last_4_bytecodes[3] = bytecode
 
+
+    def add_stack_cache_state(self, stack_depth):
+        cache_level = stack_depth
+
+        if cache_level >= MethodGenerationContext.MAX_CACHE_LEVEL:
+            cache_level = MethodGenerationContext.MAX_CACHE_LEVEL
+        elif cache_level < 0: # not sure that branch can be taken!
+            cache_level = 0
+
+        self._stack_caching_states.append(cache_level)
+
     def add_bytecode_argument(self, bytecode):
+        # if self.signature.__str__() == "#initialize:":
+        #     print(bytecode_as_str(bytecode))
         self._bytecode.append(bytecode)
+        self.add_stack_cache_state(self._current_stack_state)
 
     def add_bytecode_argument_and_get_index(self, bytecode):
+        # if self.signature.__str__() == "#initialize:":
+        #     print(bytecode_as_str(bytecode))
         idx = len(self._bytecode)
         self._bytecode.append(bytecode)
+        self.add_stack_cache_state(self._current_stack_state)
         return idx
 
     def has_bytecode(self):

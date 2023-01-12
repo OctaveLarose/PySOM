@@ -74,7 +74,7 @@ class GenericDispatchNode(_AbstractDispatchNode):
             return method.invoke_n(execution_ctx)
 
         from som.interpreter.bc.multi_interpreter import send_does_not_understand
-        return send_does_not_understand(rcvr, self._selector, execution_ctx)
+        return send_does_not_understand(rcvr, self._selector, execution_ctx, execution_ctx.state)
 
 
 class CachedDispatchNode(_AbstractDispatchNode):

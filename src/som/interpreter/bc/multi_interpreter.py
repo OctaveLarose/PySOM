@@ -36,6 +36,17 @@ def interpret(method, frame, max_stack_size):
         )
 
         bytecode = method.get_bytecode(current_bc_idx)
+        cache_state = method.get_cache_state(current_bc_idx)
+
+        # Static info was wrong, bailing out.
+        if execution_ctx.state != cache_state:
+            execution_ctx.set_state_to_canonical(execution_ctx.state)
+            # print("cache miss")
+            cache_state = 2
+            # execution_ctx.shift_state_to(cache_state)
+
+
+        # print(bytecode_as_str(bytecode), cache_state)
 
         # Get the length of the current bytecode
         bc_length = bytecode_length(bytecode)
@@ -44,7 +55,7 @@ def interpret(method, frame, max_stack_size):
         next_bc_idx = current_bc_idx + bc_length
 
         promote(execution_ctx.stack_ptr)
-        if execution_ctx.state == 0:
+        if cache_state == 0:
             get_tos = basic.get_tos
             push_1 = basic.push_1
             pop_1 = basic.pop_1
@@ -53,7 +64,7 @@ def interpret(method, frame, max_stack_size):
             set_tos_minus_1 = basic.set_tos
             set_tos_minus_2 = basic.set_tos
             read_stack_elem = basic.read_stack_elem
-        elif execution_ctx.state == 1:
+        elif cache_state == 1:
             get_tos = one.get_tos
             push_1 = one.push_1
             pop_1 = one.pop_1
@@ -62,7 +73,7 @@ def interpret(method, frame, max_stack_size):
             set_tos_minus_1 = basic.set_tos
             set_tos_minus_2 = basic.set_tos
             read_stack_elem = one.read_stack_elem
-        elif execution_ctx.state == 2:
+        elif cache_state == 2:
             get_tos = two.get_tos
             push_1 = two.push_1
             pop_1 = two.pop_1
@@ -71,7 +82,7 @@ def interpret(method, frame, max_stack_size):
             set_tos_minus_1 = one.set_tos
             set_tos_minus_2 = basic.set_tos
             read_stack_elem = two.read_stack_elem
-        elif execution_ctx.state == 3:
+        elif cache_state == 3:
             get_tos = three.get_tos
             push_1 = three.push_1
             pop_1 = three.pop_1
@@ -80,7 +91,7 @@ def interpret(method, frame, max_stack_size):
             set_tos_minus_1 = two.set_tos
             set_tos_minus_2 = one.set_tos
             read_stack_elem = three.read_stack_elem
-        elif execution_ctx.state == 4:
+        elif cache_state == 4:
             get_tos = four.get_tos
             push_1 = four.push_1
             pop_1 = four.pop_1
