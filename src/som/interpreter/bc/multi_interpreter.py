@@ -35,10 +35,6 @@ def interpret(method, frame, max_stack_size):
             frame=frame
         )
 
-        # if method.get_signature().__str__() == "#print":
-        #     print("lol")
-        # print(method.get_signature())
-
         bytecode = method.get_bytecode(current_bc_idx)
 
         # Get the length of the current bytecode
@@ -102,8 +98,6 @@ def interpret(method, frame, max_stack_size):
             set_tos_minus_1 = four.set_tos
             set_tos_minus_2 = three.set_tos
             read_stack_elem = five.read_stack_elem
-        
-            # print "BASE ", bytecode_as_str(bytecode)
 
         if bytecode == Bytecodes.halt:
             return get_tos(execution_ctx)
