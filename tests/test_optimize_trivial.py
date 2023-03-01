@@ -74,9 +74,9 @@ def parse_block(bgenc, source):
         ("#sym", "#sym"),
         ("1.1", "1.1"),
         ("-2342.234", "-2342.234"),
-        ("true", "true"),
-        ("false", "false"),
-        ("nil", "nil"),
+        # ("true", "true"),
+        # ("false", "false"),
+        # ("nil", "nil"),
     ],
 )
 def test_literal_return(mgenc, source, test_result):
@@ -191,9 +191,9 @@ def test_non_trivial_field_setter_n(cgenc, mgenc):
         "#sym",
         "1.1",
         "-2342.234",
-        "true",
-        "false",
-        "nil",
+        # "true",
+        # "false",
+        # "nil",
     ],
 )
 def test_literal_no_return(mgenc, source):
@@ -212,9 +212,9 @@ def test_literal_no_return(mgenc, source):
         "#sym",
         "1.1",
         "-2342.234",
-        "true",
-        "false",
-        "nil",
+        # "true",
+        # "false",
+        # "nil",
     ],
 )
 def test_non_trivial_literal_return(mgenc, source):
@@ -240,9 +240,9 @@ def test_block_return(mgenc):
         ("#sym", "#sym"),
         ("1.1", "1.1"),
         ("-2342.234", "-2342.234"),
-        ("true", "true"),
-        ("false", "false"),
-        ("nil", "nil"),
+        # ("true", "true"),
+        # ("false", "false"),
+        # ("nil", "nil"),
     ],
 )
 def test_block_literal_return(bgenc, source, test_result):

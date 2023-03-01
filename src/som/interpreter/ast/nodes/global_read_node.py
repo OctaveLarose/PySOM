@@ -9,16 +9,16 @@ from som.vmobjects.method_trivial import GlobalRead
 
 
 def create_global_node(global_name, universe, mgenc, source_section):
-    if global_name is sym_true:
-        return LiteralNode(trueObject, source_section)
-    if global_name is sym_false:
-        return LiteralNode(falseObject, source_section)
-    if global_name is sym_nil:
-        return LiteralNode(nilObject, source_section)
-
-    assoc = universe.get_globals_association_or_none(global_name)
-    if assoc is not None:
-        return _CachedGlobalReadNode(assoc, source_section)
+    # if global_name is sym_true:
+    #     return LiteralNode(trueObject, source_section)
+    # if global_name is sym_false:
+    #     return LiteralNode(falseObject, source_section)
+    # if global_name is sym_nil:
+    #     return LiteralNode(nilObject, source_section)
+    #
+    # assoc = universe.get_globals_association_or_none(global_name)
+    # if assoc is not None:
+    #     return _CachedGlobalReadNode(assoc, source_section)
 
     context_level = mgenc.get_context_level("self")
     mgenc.mark_self_as_accessed_from_outer_context()
@@ -37,7 +37,8 @@ class _UninitializedGlobalReadNode(ContextualNode):
 
     def execute(self, frame):
         if self.universe.has_global(self._global_name):
-            return self._specialize().execute(frame)
+            return self.universe.get_global(self._global_name)
+
         return lookup_and_send_2(
             self.determine_outer_self(frame),
             self._global_name,
@@ -45,9 +46,10 @@ class _UninitializedGlobalReadNode(ContextualNode):
         )
 
     def _specialize(self):
-        assoc = self.universe.get_globals_association(self._global_name)
-        cached = _CachedGlobalReadNode(assoc, self.source_section)
-        return self.replace(cached)
+        raise NotImplementedError
+        # assoc = self.universe.get_globals_association(self._global_name)
+        # cached = _CachedGlobalReadNode(assoc, self.source_section)
+        # return self.replace(cached)
 
     def create_trivial_method(self, signature):
         return GlobalRead(
@@ -58,15 +60,15 @@ class _UninitializedGlobalReadNode(ContextualNode):
         self._context_level -= 1
 
 
-class _CachedGlobalReadNode(ExpressionNode):
-    _immutable_fields_ = ["_assoc"]
-
-    def __init__(self, assoc, source_section):
-        ExpressionNode.__init__(self, source_section)
-        self._assoc = assoc
-
-    def execute(self, _frame):
-        return self._assoc.value
-
-    def create_trivial_method(self, signature):
-        return GlobalRead(signature, None, 0, None, self._assoc)
+# class _CachedGlobalReadNode(ExpressionNode):
+#     _immutable_fields_ = ["_assoc"]
+#
+#     def __init__(self, assoc, source_section):
+#         ExpressionNode.__init__(self, source_section)
+#         self._assoc = assoc
+#
+#     def execute(self, _frame):
+#         return self._assoc.value
+#
+#     def create_trivial_method(self, signature):
+#         return GlobalRead(signature, None, 0, None, self._assoc)
