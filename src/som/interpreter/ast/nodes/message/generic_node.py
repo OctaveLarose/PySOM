@@ -63,19 +63,19 @@ class _AbstractGenericMessageNode(ExpressionNode):
             if cache is not None:
                 return cache
 
-        cache_size = self._get_cache_size_and_drop_old_entries()
-
-        if cache_size < INLINE_CACHE_SIZE:
-            method = layout.lookup_invokable(self._selector)
-
-            if method is not None:
-                node = CachedDispatchNode(layout, method, self._dispatch)
-            else:
-                node = CachedDnuNode(self._selector, layout, self._dispatch)
-
-            node.parent = self
-            self._dispatch = node
-            return node
+        # self._dispatch, cache_size = get_clean_inline_cache_and_size(self._dispatch)
+        #
+        # if cache_size < INLINE_CACHE_SIZE:
+        #     method = layout.lookup_invokable(self._selector)
+        #
+        #     if method is not None:
+        #         node = CachedDispatchNode(layout, method, self._dispatch)
+        #     else:
+        #         node = CachedDnuNode(self._selector, layout, self._dispatch)
+        #
+        #     node.parent = self
+        #     self._dispatch = node
+        #     return node
 
         # the chain is longer than the maximum defined by INLINE_CACHE_SIZE
         # and thus, this callsite is considered to be megamorphic, and we

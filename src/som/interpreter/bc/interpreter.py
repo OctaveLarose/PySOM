@@ -692,37 +692,22 @@ def get_self(frame, ctx_level):
 
 @elidable_promote("all")
 def _lookup(layout, method, bytecode_index, universe):
-    cache = first = method.get_inline_cache(bytecode_index)
-    while cache is not None:
-        if cache.expected_layout is layout:
-            return cache
-        cache = cache.next_entry
+    # cache = first = method.get_inline_cache(bytecode_index)
+    # while cache is not None:
+    #     if cache.expected_layout is layout:
+    #         return cache
+    #     cache = cache.next_entry
 
-    # this is the generic dispatch node
-    if first and first.expected_layout is None:
-        return first
-
-    # get size of cache
-    cache_size = 0
-    while cache is not None:
-        cache = cache.next_entry
-        cache_size += 1
-
-    # read the selector only now when we will actually need it
+    # cache_size = get_inline_cache_size(first)
+    # if INLINE_CACHE_SIZE >= cache_size:
+    #     invoke = layout.lookup_invokable(selector)
+    #     if invoke is not None:
+    #         new_dispatch_node = CachedDispatchNode(rcvr_class=layout, method=invoke, next_entry=first)
+    #         method.set_inline_cache(bytecode_index, new_dispatch_node)
+    #         return new_dispatch_node
     selector = method.get_constant(bytecode_index)
 
-    if INLINE_CACHE_SIZE >= cache_size:
-        invoke = layout.lookup_invokable(selector)
-        if invoke is not None:
-            new_dispatch_node = CachedDispatchNode(
-                rcvr_class=layout, method=invoke, next_entry=first
-            )
-            method.set_inline_cache(bytecode_index, new_dispatch_node)
-            return new_dispatch_node
-
-    generic = GenericDispatchNode(selector, universe)
-    method.set_inline_cache(bytecode_index, generic)
-    return generic
+    return GenericDispatchNode(selector, universe)
 
 
 def _update_object_and_invalidate_old_caches(obj, method, bytecode_index, universe):
