@@ -14,7 +14,7 @@ from som.interpreter.bc.frame import (
 )
 from som.interpreter.control_flow import ReturnException
 from som.interpreter.send import lookup_and_send_2, lookup_and_send_3, get_inline_cache_size, get_clean_inline_cache_and_size
-from som.vm.globals import nilObject, trueObject, falseObject
+from som.vm.symbols import sym_nil, sym_true, sym_false
 from som.vmobjects.array import Array
 from som.vmobjects.block_bc import BcBlock
 from som.vmobjects.integer import int_0, int_1
@@ -231,7 +231,7 @@ def interpret(method, frame, max_stack_size):
 
         elif bytecode == Bytecodes.push_nil:
             stack_ptr += 1
-            stack[stack_ptr] = nilObject
+            stack[stack_ptr] = current_universe.get_global(sym_nil)
 
         elif bytecode == Bytecodes.push_global:
             global_name = method.get_constant(current_bc_idx)
@@ -489,9 +489,9 @@ def interpret(method, frame, max_stack_size):
 
         elif bytecode == Bytecodes.jump_on_true_top_nil:
             val = stack[stack_ptr]
-            if val is trueObject:
+            if val is current_universe.get_global(sym_true):
                 next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
-                stack[stack_ptr] = nilObject
+                stack[stack_ptr] = current_universe.get_global(sym_nil)
             else:
                 if we_are_jitted():
                     stack[stack_ptr] = None
@@ -499,9 +499,9 @@ def interpret(method, frame, max_stack_size):
 
         elif bytecode == Bytecodes.jump_on_false_top_nil:
             val = stack[stack_ptr]
-            if val is falseObject:
+            if val is current_universe.get_global(sym_false):
                 next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
-                stack[stack_ptr] = nilObject
+                stack[stack_ptr] = current_universe.get_global(sym_nil)
             else:
                 if we_are_jitted():
                     stack[stack_ptr] = None
@@ -509,7 +509,7 @@ def interpret(method, frame, max_stack_size):
 
         elif bytecode == Bytecodes.jump_on_true_pop:
             val = stack[stack_ptr]
-            if val is trueObject:
+            if val is current_universe.get_global(sym_true):
                 next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
             if we_are_jitted():
                 stack[stack_ptr] = None
@@ -517,7 +517,7 @@ def interpret(method, frame, max_stack_size):
 
         elif bytecode == Bytecodes.jump_on_false_pop:
             val = stack[stack_ptr]
-            if val is falseObject:
+            if val is current_universe.get_global(sym_false):
                 next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)
             if we_are_jitted():
                 stack[stack_ptr] = None
@@ -542,13 +542,13 @@ def interpret(method, frame, max_stack_size):
 
         elif bytecode == Bytecodes.jump2_on_true_top_nil:
             val = stack[stack_ptr]
-            if val is trueObject:
+            if val is current_universe.get_global(sym_true):
                 next_bc_idx = (
                     current_bc_idx
                     + method.get_bytecode(current_bc_idx + 1)
                     + (method.get_bytecode(current_bc_idx + 2) << 8)
                 )
-                stack[stack_ptr] = nilObject
+                stack[stack_ptr] = current_universe.get_global(sym_nil)
             else:
                 if we_are_jitted():
                     stack[stack_ptr] = None
@@ -556,13 +556,13 @@ def interpret(method, frame, max_stack_size):
 
         elif bytecode == Bytecodes.jump2_on_false_top_nil:
             val = stack[stack_ptr]
-            if val is falseObject:
+            if val is current_universe.get_global(sym_false):
                 next_bc_idx = (
                     current_bc_idx
                     + method.get_bytecode(current_bc_idx + 1)
                     + (method.get_bytecode(current_bc_idx + 2) << 8)
                 )
-                stack[stack_ptr] = nilObject
+                stack[stack_ptr] = current_universe.get_global(sym_nil)
             else:
                 if we_are_jitted():
                     stack[stack_ptr] = None
@@ -570,7 +570,7 @@ def interpret(method, frame, max_stack_size):
 
         elif bytecode == Bytecodes.jump2_on_true_pop:
             val = stack[stack_ptr]
-            if val is trueObject:
+            if val is current_universe.get_global(sym_true):
                 next_bc_idx = (
                     current_bc_idx
                     + method.get_bytecode(current_bc_idx + 1)
@@ -582,7 +582,7 @@ def interpret(method, frame, max_stack_size):
 
         elif bytecode == Bytecodes.jump2_on_false_pop:
             val = stack[stack_ptr]
-            if val is falseObject:
+            if val is current_universe.get_global(sym_false):
                 next_bc_idx = (
                     current_bc_idx
                     + method.get_bytecode(current_bc_idx + 1)
