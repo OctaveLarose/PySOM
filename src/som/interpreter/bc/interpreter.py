@@ -44,15 +44,15 @@ def _do_super_send(bytecode_index, method, stack, stack_ptr):
             bytecode_index, CachedDispatchNode(None, invokable, None)
         )
 
-        if num_args == 1:
-            bc = Bytecodes.q_super_send_1
-        elif num_args == 2:
-            bc = Bytecodes.q_super_send_2
-        elif num_args == 3:
-            bc = Bytecodes.q_super_send_3
-        else:
-            bc = Bytecodes.q_super_send_n
-        method.set_bytecode(bytecode_index, bc)
+        # if num_args == 1:
+        #     bc = Bytecodes.q_super_send_1
+        # elif num_args == 2:
+        #     bc = Bytecodes.q_super_send_2
+        # elif num_args == 3:
+        #     bc = Bytecodes.q_super_send_3
+        # else:
+        #     bc = Bytecodes.q_super_send_n
+        # method.set_bytecode(bytecode_index, bc)
         stack_ptr = _invoke_invokable_slow_path(
             invokable, num_args, receiver, stack, stack_ptr
         )
@@ -617,31 +617,31 @@ def interpret(method, frame, max_stack_size):
                 stack=stack,
             )
 
-        elif bytecode == Bytecodes.q_super_send_1:
-            dispatch_node = method.get_inline_cache(current_bc_idx)
-            stack[stack_ptr] = dispatch_node.dispatch_1(stack[stack_ptr])
-
-        elif bytecode == Bytecodes.q_super_send_2:
-            dispatch_node = method.get_inline_cache(current_bc_idx)
-            arg = stack[stack_ptr]
-            if we_are_jitted():
-                stack[stack_ptr] = None
-            stack_ptr -= 1
-            stack[stack_ptr] = dispatch_node.dispatch_2(stack[stack_ptr], arg)
-
-        elif bytecode == Bytecodes.q_super_send_3:
-            dispatch_node = method.get_inline_cache(current_bc_idx)
-            arg2 = stack[stack_ptr]
-            arg1 = stack[stack_ptr - 1]
-            if we_are_jitted():
-                stack[stack_ptr] = None
-                stack[stack_ptr - 1] = None
-            stack_ptr -= 2
-            stack[stack_ptr] = dispatch_node.dispatch_3(stack[stack_ptr], arg1, arg2)
-
-        elif bytecode == Bytecodes.q_super_send_n:
-            dispatch_node = method.get_inline_cache(current_bc_idx)
-            stack_ptr = dispatch_node.dispatch_n_bc(stack, stack_ptr, None)
+        # elif bytecode == Bytecodes.q_super_send_1:
+        #     dispatch_node = method.get_inline_cache(current_bc_idx)
+        #     stack[stack_ptr] = dispatch_node.dispatch_1(stack[stack_ptr])
+        #
+        # elif bytecode == Bytecodes.q_super_send_2:
+        #     dispatch_node = method.get_inline_cache(current_bc_idx)
+        #     arg = stack[stack_ptr]
+        #     if we_are_jitted():
+        #         stack[stack_ptr] = None
+        #     stack_ptr -= 1
+        #     stack[stack_ptr] = dispatch_node.dispatch_2(stack[stack_ptr], arg)
+        #
+        # elif bytecode == Bytecodes.q_super_send_3:
+        #     dispatch_node = method.get_inline_cache(current_bc_idx)
+        #     arg2 = stack[stack_ptr]
+        #     arg1 = stack[stack_ptr - 1]
+        #     if we_are_jitted():
+        #         stack[stack_ptr] = None
+        #         stack[stack_ptr - 1] = None
+        #     stack_ptr -= 2
+        #     stack[stack_ptr] = dispatch_node.dispatch_3(stack[stack_ptr], arg1, arg2)
+        #
+        # elif bytecode == Bytecodes.q_super_send_n:
+        #     dispatch_node = method.get_inline_cache(current_bc_idx)
+        #     stack_ptr = dispatch_node.dispatch_n_bc(stack, stack_ptr, None)
 
         elif bytecode == Bytecodes.push_local:
             method.patch_variable_access(current_bc_idx)
