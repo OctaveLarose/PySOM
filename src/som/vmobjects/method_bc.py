@@ -417,13 +417,6 @@ class BcMethod(BcAbstractMethod):
                     emit_return_non_local(mgenc)
 
             elif (
-                bytecode == Bytecodes.return_field_0
-                or bytecode == Bytecodes.return_field_1
-                or bytecode == Bytecodes.return_field_2
-            ):
-                emit1(mgenc, bytecode, 0)
-
-            elif (
                 bytecode == Bytecodes.jump
                 or bytecode == Bytecodes.jump_on_true_top_nil
                 or bytecode == Bytecodes.jump_on_false_top_nil
@@ -512,9 +505,6 @@ class BcMethod(BcAbstractMethod):
                 or bytecode == Bytecodes.send_n
                 or bytecode == Bytecodes.super_send
                 or bytecode == Bytecodes.return_local
-                or bytecode == Bytecodes.return_field_0
-                or bytecode == Bytecodes.return_field_1
-                or bytecode == Bytecodes.return_field_2
                 or bytecode == Bytecodes.inc
                 or bytecode == Bytecodes.dec
                 or bytecode == Bytecodes.jump

@@ -121,10 +121,6 @@ class MethodGenerationContext(MethodGenerationContextBase):
             assert not self.is_block_method
             return self._assemble_field_setter(return_candidate)
 
-        return_candidate = self._last_bytecode_is_one_of(0, RETURN_FIELD_BYTECODES)
-        if return_candidate != Bytecodes.invalid:
-            return self._assemble_field_getter_from_return(return_candidate)
-
         return None
 
     def assemble(self, _dummy):
@@ -449,17 +445,6 @@ class MethodGenerationContext(MethodGenerationContextBase):
             ctx = self._bytecode[-2]
 
         return FieldRead(self.signature, idx, ctx)
-
-    def _assemble_field_getter_from_return(self, return_candidate):
-        if len(self._bytecode) != bytecode_length(return_candidate):
-            return None
-
-        if return_candidate == Bytecodes.return_field_0:
-            return FieldRead(self.signature, 0, 0)
-        if return_candidate == Bytecodes.return_field_1:
-            return FieldRead(self.signature, 1, 0)
-        assert return_candidate == Bytecodes.return_field_2
-        return FieldRead(self.signature, 2, 0)
 
     def _assemble_field_setter(self, return_candidate):
         pop_candidate = self._last_bytecode_is_one_of(1, POP_FIELD_BYTECODES)

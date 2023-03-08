@@ -34,21 +34,6 @@ def emit_return_non_local(mgenc):
     emit2(mgenc, BC.return_non_local, mgenc.get_max_context_level(), 0)
 
 
-def emit_return_field(mgenc, field_idx):
-    if field_idx == 0:
-        emit1(mgenc, BC.return_field_0, 0)
-        return
-    if field_idx == 1:
-        emit1(mgenc, BC.return_field_1, 0)
-        return
-    if field_idx == 2:
-        emit1(mgenc, BC.return_field_2, 0)
-        return
-    raise NotImplementedError(
-        "Don't support fields with index > 2, but got " + str(field_idx)
-    )
-
-
 def emit_dup(mgenc):
     emit1(mgenc, BC.dup, 1)
 
