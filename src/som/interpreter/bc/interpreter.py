@@ -434,9 +434,6 @@ def interpret(method, frame, max_stack_size):
                 val, frame, method.get_bytecode(current_bc_idx + 1)
             )
 
-        elif bytecode == Bytecodes.return_self:
-            return read_frame(frame, FRAME_AND_INNER_RCVR_IDX)
-
         elif bytecode == Bytecodes.inc:
             val = stack[stack_ptr]
             from som.vmobjects.integer import Integer

@@ -59,13 +59,13 @@ class Bytecodes(object):
 
     return_local = super_send + 1
     return_non_local = return_local + 1
-    return_self = return_non_local + 1
+    # return_self = return_non_local + 1
 
     # return_field_0 = return_self + 1
     # return_field_1 = return_field_0 + 1
     # return_field_2 = return_field_1 + 1
 
-    inc = return_self + 1
+    inc = return_non_local + 1
     dec = inc + 1
 
     # inc_field = dec + 1
@@ -189,7 +189,7 @@ NOT_EXPECTED_IN_BLOCK_BYTECODES = [
     Bytecodes.push_field_1,
     Bytecodes.pop_field_0,
     Bytecodes.pop_field_1,
-    Bytecodes.return_self,
+    # Bytecodes.return_self,
     # Bytecodes.return_field_0,
     # Bytecodes.return_field_1,
     # Bytecodes.return_field_2,
@@ -238,7 +238,7 @@ _BYTECODE_LENGTH = [
     2,  # super_send
     1,  # return_local
     2,  # return_non_local
-    1,  # return_self
+    # 1,  # return_self
     # 1,  # return_field_0
     # 1,  # return_field_1
     # 1,  # return_field_2

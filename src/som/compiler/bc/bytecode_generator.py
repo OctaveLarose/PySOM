@@ -19,12 +19,6 @@ def emit_pop(mgenc):
 def emit_push_argument(mgenc, idx, ctx):
     emit3(mgenc, BC.push_argument, idx, ctx, 1)
 
-
-def emit_return_self(mgenc):
-    mgenc.optimize_dup_pop_pop_sequence()
-    emit1(mgenc, BC.return_self, 0)
-
-
 def emit_return_local(mgenc):
     # if not mgenc.optimize_return_field():
     emit1(mgenc, BC.return_local, 0)

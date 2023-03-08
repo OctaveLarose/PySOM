@@ -7,7 +7,6 @@ from som.compiler.bc.bytecode_generator import (
     emit_pop_field,
     emit_pop_local,
     emit_return_local,
-    emit_return_self,
     emit_super_send,
     emit_push_field,
     emit_push_global,
@@ -47,9 +46,9 @@ class Parser(ParserBase):
         # terminating the last expression, so the last expression's value must
         # be popped off the stack and a ^self be generated
         if not mgenc.is_finished():
-            # with RETURN_SELF, we don't need the extra stack space
-            # self._bc_gen.emitPOP(mgenc)
-            emit_return_self(mgenc)
+            emit_pop(mgenc)
+            emit_push_argument(mgenc, 0, 0)
+            emit_return_local(mgenc)
             mgenc.set_finished()
 
         self._expect(Symbol.EndTerm)
@@ -76,7 +75,9 @@ class Parser(ParserBase):
             # it does not matter whether a period has been seen, as the end of
             # the method has been found (EndTerm) - so it is safe to emit a
             # "return self"
-            emit_return_self(mgenc)
+            emit_pop(mgenc)
+            emit_push_argument(mgenc, 0, 0)
+            emit_return_local(mgenc)
             mgenc.set_finished()
         else:
             self._expression(mgenc)
@@ -95,7 +96,9 @@ class Parser(ParserBase):
             if self._next_sym == Symbol.Period or self._next_sym == Symbol.EndTerm:
                 self._expect(Symbol.Identifier)
 
-                emit_return_self(mgenc)
+                emit_pop(mgenc)
+                emit_push_argument(mgenc, 0, 0)
+                emit_return_local(mgenc)
                 mgenc.set_finished()
 
                 self._accept(Symbol.Period)

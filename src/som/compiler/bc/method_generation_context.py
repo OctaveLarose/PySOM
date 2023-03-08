@@ -115,11 +115,12 @@ class MethodGenerationContext(MethodGenerationContextBase):
             if push_candidate != Bytecodes.invalid:
                 return self._assemble_field_getter(return_candidate, push_candidate)
 
+        # TODO: hmm, maybe we should keep this thing even if we removed return_self, and check for the last 3 bytecodes we replaced it with instead
         # because we check for return_self here, we don't consider block methods
-        return_candidate = self._last_bytecode_is(0, Bytecodes.return_self)
-        if return_candidate != Bytecodes.invalid:
-            assert not self.is_block_method
-            return self._assemble_field_setter(return_candidate)
+        # return_candidate = self._last_bytecode_is(0, Bytecodes.return_self)
+        # if return_candidate != Bytecodes.invalid:
+        #     assert not self.is_block_method
+        #     return self._assemble_field_setter(return_candidate)
 
         return None
 
