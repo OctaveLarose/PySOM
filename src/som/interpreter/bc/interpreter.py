@@ -437,17 +437,17 @@ def interpret(method, frame, max_stack_size):
         elif bytecode == Bytecodes.return_self:
             return read_frame(frame, FRAME_AND_INNER_RCVR_IDX)
 
-        elif bytecode == Bytecodes.return_field_0:
-            self_obj = read_frame(frame, FRAME_AND_INNER_RCVR_IDX)
-            return self_obj.get_field(0)
-
-        elif bytecode == Bytecodes.return_field_1:
-            self_obj = read_frame(frame, FRAME_AND_INNER_RCVR_IDX)
-            return self_obj.get_field(1)
-
-        elif bytecode == Bytecodes.return_field_2:
-            self_obj = read_frame(frame, FRAME_AND_INNER_RCVR_IDX)
-            return self_obj.get_field(2)
+        # elif bytecode == Bytecodes.return_field_0:
+        #     self_obj = read_frame(frame, FRAME_AND_INNER_RCVR_IDX)
+        #     return self_obj.get_field(0)
+        #
+        # elif bytecode == Bytecodes.return_field_1:
+        #     self_obj = read_frame(frame, FRAME_AND_INNER_RCVR_IDX)
+        #     return self_obj.get_field(1)
+        #
+        # elif bytecode == Bytecodes.return_field_2:
+        #     self_obj = read_frame(frame, FRAME_AND_INNER_RCVR_IDX)
+        #     return self_obj.get_field(2)
 
         elif bytecode == Bytecodes.inc:
             val = stack[stack_ptr]
@@ -480,21 +480,6 @@ def interpret(method, frame, max_stack_size):
             else:
                 return _not_yet_implemented()
             stack[stack_ptr] = result
-
-        elif bytecode == Bytecodes.inc_field:
-            field_idx = method.get_bytecode(current_bc_idx + 1)
-            ctx_level = method.get_bytecode(current_bc_idx + 2)
-            self_obj = get_self(frame, ctx_level)
-
-            self_obj.inc_field(field_idx)
-
-        elif bytecode == Bytecodes.inc_field_push:
-            field_idx = method.get_bytecode(current_bc_idx + 1)
-            ctx_level = method.get_bytecode(current_bc_idx + 2)
-            self_obj = get_self(frame, ctx_level)
-
-            stack_ptr += 1
-            stack[stack_ptr] = self_obj.inc_field(field_idx)
 
         elif bytecode == Bytecodes.jump:
             next_bc_idx = current_bc_idx + method.get_bytecode(current_bc_idx + 1)

@@ -5,8 +5,6 @@ from som.compiler.bc.bytecode_generator import (
     emit_pop,
     emit_push_constant,
     emit_jump_backward_with_offset,
-    emit_inc_field_push,
-    emit_return_field,
 )
 
 from som.compiler.method_generation_context import MethodGenerationContextBase
@@ -225,17 +223,6 @@ class MethodGenerationContext(MethodGenerationContextBase):
             self._last_4_bytecodes[1] = self._last_4_bytecodes[2]
             self._last_4_bytecodes[2] = Bytecodes.dup
 
-        if self._last_4_bytecodes[3] == Bytecodes.inc_field:
-            # we optimized the sequence to an INC_FIELD, which doesn't modify the stack
-            # but since we need the value to return it from the block, we need to push it.
-            self._last_4_bytecodes[3] = Bytecodes.inc_field_push
-
-            bc_offset = len(self._bytecode) - 3
-            assert bytecode_length(Bytecodes.inc_field_push) == 3
-            assert bytecode_length(Bytecodes.inc_field) == 3
-            assert self._bytecode[bc_offset] == Bytecodes.inc_field
-            self._bytecode[bc_offset] = Bytecodes.inc_field_push
-
     def add_literal_if_absent(self, lit):
         if lit in self._literals:
             return self._literals.index(lit)
@@ -365,9 +352,6 @@ class MethodGenerationContext(MethodGenerationContextBase):
         if self._is_currently_inlining_a_block:
             return False
 
-        if self._last_bytecode_is(0, Bytecodes.inc_field_push) != Bytecodes.invalid:
-            return self.optimize_inc_field_push()
-
         pop_candidate = self._last_bytecode_is_one_of(0, POP_X_BYTECODES)
         if pop_candidate == Bytecodes.invalid:
             return False
@@ -384,80 +368,6 @@ class MethodGenerationContext(MethodGenerationContextBase):
         self._last_4_bytecodes[1] = self._last_4_bytecodes[0]
         self._last_4_bytecodes[0] = Bytecodes.invalid
 
-        return True
-
-    def optimize_inc_field_push(self):
-        assert bytecode_length(Bytecodes.inc_field_push) == 3
-
-        bc_idx = len(self._bytecode) - 3
-        assert self._bytecode[bc_idx] == Bytecodes.inc_field_push
-
-        self._bytecode[bc_idx] = Bytecodes.inc_field
-        self._last_4_bytecodes[3] = Bytecodes.inc_field
-
-        return True
-
-    def optimize_inc_field(self, field_idx, ctx_level):
-        """
-        Try using a INC_FIELD bytecode instead of the following sequence.
-
-          PUSH_FIELD
-          INC
-          DUP
-          POP_FIELD
-
-        return true, if it optimized it.
-        """
-        if self._is_currently_inlining_a_block:
-            return False
-
-        if self._last_bytecode_is(0, Bytecodes.dup) == Bytecodes.invalid:
-            return False
-
-        if self._last_bytecode_is(1, Bytecodes.inc) == Bytecodes.invalid:
-            return False
-
-        push_candidate = self._last_bytecode_is_one_of(2, PUSH_FIELD_BYTECODES)
-        if push_candidate == Bytecodes.invalid:
-            return False
-
-        assert bytecode_length(Bytecodes.dup) == 1
-        assert bytecode_length(Bytecodes.inc) == 1
-        bc_offset = 1 + 1 + bytecode_length(push_candidate)
-
-        candidate_idx, candidate_ctx = self._get_index_and_ctx_of_last(
-            push_candidate, bc_offset
-        )
-        if candidate_idx == field_idx and candidate_ctx == ctx_level:
-            self._remove_last_bytecodes(3)
-            self._reset_last_bytecode_buffer()
-            emit_inc_field_push(self, field_idx, ctx_level)
-            return True
-        return False
-
-    def optimize_return_field(self):
-        if self._is_currently_inlining_a_block:
-            return False
-
-        bytecode = self._last_4_bytecodes[3]
-        if bytecode == Bytecodes.push_field_0:
-            idx = 0
-        elif bytecode == Bytecodes.push_field_1:
-            idx = 1
-        elif bytecode == Bytecodes.push_field:
-            bc_offset = len(self._bytecode)
-            ctx = self._bytecode[bc_offset - 1]
-            if ctx > 0:
-                return False
-            idx = self._bytecode[bc_offset - 2]
-            if idx > 2:
-                return False
-        else:
-            return False
-
-        self._remove_last_bytecodes(1)
-        self._reset_last_bytecode_buffer()
-        emit_return_field(self, idx)
         return True
 
     def _get_index_and_ctx_of_last(self, bytecode, bc_offset):

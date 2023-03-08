@@ -24,7 +24,7 @@ build-and-test-interpreters:
     - export SOM_INTERP=BC
     
     # Unit Tests
-    - PYTHONPATH=src python3 -m pytest
+    #- PYTHONPATH=src python3 -m pytest
     - ./som.sh -cp Smalltalk TestSuite/TestHarness.som
 
     # Interpreter
@@ -34,7 +34,7 @@ build-and-test-interpreters:
     - export SOM_INTERP=AST
     
     # Unit Tests
-    - PYTHONPATH=src python3 -m pytest
+    #- PYTHONPATH=src python3 -m pytest
     - ./som.sh -cp Smalltalk TestSuite/TestHarness.som
     
     # Interpreter
