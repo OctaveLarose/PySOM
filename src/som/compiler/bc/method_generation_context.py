@@ -385,14 +385,7 @@ class MethodGenerationContext(MethodGenerationContextBase):
 
         if len(self._literals) == 1:
             return LiteralReturn(self.signature, self._literals[0])
-        if self._bytecode[0] == Bytecodes.push_0:
-            return LiteralReturn(self.signature, int_0)
-        if self._bytecode[0] == Bytecodes.push_1:
-            return LiteralReturn(self.signature, int_1)
-        if self._bytecode[0] == Bytecodes.push_nil:
-            from som.vm.globals import nilObject
 
-            return LiteralReturn(self.signature, nilObject)
         raise NotImplementedError(
             "Not sure what's going on. Perhaps some new bytecode or unexpected literal?"
         )
