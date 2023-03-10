@@ -371,13 +371,6 @@ class BcMethod(BcAbstractMethod):
                 literal = self._literals[literal_idx]
                 emit_push_constant(mgenc, literal)
 
-            elif (
-                bytecode == Bytecodes.push_0
-                or bytecode == Bytecodes.push_1
-                or bytecode == Bytecodes.push_nil
-            ):
-                emit1(mgenc, bytecode, 1)
-
             elif bytecode == Bytecodes.pop:
                 emit1(mgenc, bytecode, -1)
 
@@ -494,9 +487,6 @@ class BcMethod(BcAbstractMethod):
                 or bytecode == Bytecodes.push_constant_0
                 or bytecode == Bytecodes.push_constant_1
                 or bytecode == Bytecodes.push_constant_2
-                or bytecode == Bytecodes.push_0
-                or bytecode == Bytecodes.push_1
-                or bytecode == Bytecodes.push_nil
                 or bytecode == Bytecodes.push_global
                 or bytecode == Bytecodes.pop  # push_global doesn't encode context
                 or bytecode == Bytecodes.send_1

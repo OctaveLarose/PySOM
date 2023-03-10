@@ -128,18 +128,6 @@ def emit_send(mgenc, msg):
 def emit_push_constant(mgenc, lit):
     from som.vmobjects.integer import Integer
 
-    if isinstance(lit, Integer):
-        if lit.get_embedded_integer() == 0:
-            emit1(mgenc, BC.push_0, 1)
-            return
-        if lit.get_embedded_integer() == 1:
-            emit1(mgenc, BC.push_1, 1)
-            return
-
-    if lit is nilObject:
-        emit1(mgenc, BC.push_nil, 1)
-        return
-
     idx = mgenc.add_literal_if_absent(lit)
     if idx == 0:
         emit1(mgenc, BC.push_constant_0, 1)

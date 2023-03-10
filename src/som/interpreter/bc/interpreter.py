@@ -228,18 +228,6 @@ def interpret(method, frame, max_stack_size):
             stack_ptr += 1
             stack[stack_ptr] = method._literals[2]  # pylint: disable=protected-access
 
-        elif bytecode == Bytecodes.push_0:
-            stack_ptr += 1
-            stack[stack_ptr] = int_0
-
-        elif bytecode == Bytecodes.push_1:
-            stack_ptr += 1
-            stack[stack_ptr] = int_1
-
-        elif bytecode == Bytecodes.push_nil:
-            stack_ptr += 1
-            stack[stack_ptr] = nilObject
-
         elif bytecode == Bytecodes.push_global:
             global_name = method.get_constant(current_bc_idx)
             glob = current_universe.get_global(global_name)
