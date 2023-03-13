@@ -459,15 +459,15 @@ class BcMethod(BcAbstractMethod):
                 jump = _Jump(i + offset, bytecode, idx)
                 heappush(jumps, jump)
 
-            elif (
-                bytecode == Bytecodes.jump_backward
-                or bytecode == Bytecodes.jump2_backward
-            ):
-                jump = heappop(back_jumps_to_patch)
-                assert (
-                    jump.address == i
-                ), "the jump should match with the jump instructions"
-                mgenc.emit_backwards_jump_offset_to_target(jump.loop_begin_idx, None)
+            # elif (
+            #     bytecode == Bytecodes.jump_backward
+            #     or bytecode == Bytecodes.jump2_backward
+            # ):
+            #     jump = heappop(back_jumps_to_patch)
+            #     assert (
+            #         jump.address == i
+            #     ), "the jump should match with the jump instructions"
+            #     mgenc.emit_backwards_jump_offset_to_target(jump.loop_begin_idx, None)
 
             elif bytecode in RUN_TIME_ONLY_BYTECODES:
                 raise Exception(
