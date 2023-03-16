@@ -1,0 +1,58 @@
+diff --color '--exclude=*.pyc' -Naur pypy2.7-MINE/rpython/memory/gc/minimark.py pypy2.7-the_ohgee/rpython/memory/gc/minimark.py
+--- pypy2.7-MINE/rpython/memory/gc/minimark.py	2023-03-16 11:07:29.086183346 +0000
++++ pypy2.7-the_ohgee/rpython/memory/gc/minimark.py	2022-12-29 08:04:27.000000000 +0000
+@@ -310,7 +310,6 @@
+         self.young_rawmalloced_objects = self.null_address_dict()
+         self.old_rawmalloced_objects = self.AddressStack()
+         self.rawmalloced_total_size = r_uint(0)
+-        self.rawmalloced_total_size_cumulative = r_uint(0)
+         #
+         # Two lists of all objects with finalizers.  Actually they are lists
+         # of pairs (finalization_queue_nr, object).  "probably young objects"
+@@ -807,7 +806,6 @@
+             # Record the newly allocated object and its full malloced size.
+             # The object is young or old depending on the argument.
+             self.rawmalloced_total_size += r_uint(allocsize)
+-            self.rawmalloced_total_size_cumulative += r_uint(allocsize)
+             if alloc_young:
+                 if not self.young_rawmalloced_objects:
+                     self.young_rawmalloced_objects = self.AddressDict()
+@@ -1351,10 +1349,8 @@
+         self.nursery_top = self.nursery + self.initial_cleanup
+         self.nursery_real_top = self.nursery + self.nursery_size
+         #
+-        # debug_print("minor collect, total memory used:",
+-        #             self.get_total_memory_used())
+-        debug_print("minor collect, total memory used CUMULATIVE:",
+-                    self.rawmalloced_total_size_cumulative)
++        debug_print("minor collect, total memory used:",
++                    self.get_total_memory_used())
+         if self.DEBUG >= 2:
+             self.debug_check_consistency()     # expensive!
+         debug_stop("gc-minor")
+@@ -1606,7 +1602,6 @@
+         #
+         size_gc_header = self.gcheaderbuilder.size_gc_header
+         self.rawmalloced_total_size += r_uint(raw_malloc_usage(totalsize))
+-        self.rawmalloced_total_size_cumulative += r_uint(raw_malloc_usage(totalsize))
+         self.old_rawmalloced_objects.append(arena + size_gc_header)
+         return arena
+ 
+@@ -1648,8 +1643,6 @@
+                     self.ac.total_memory_used, "bytes")
+         debug_print("|          raw_malloced:           ",
+                     self.rawmalloced_total_size, "bytes")
+-        debug_print("|          raw_malloced CUMULATIVE, OURS:           ",
+-                    self.rawmalloced_total_size_cumulative, "bytes")
+         #
+         # Debugging checks
+         ll_assert(self.nursery_free == self.nursery,
+@@ -1701,8 +1694,6 @@
+                     self.ac.total_memory_used, "bytes")
+         debug_print("|          raw_malloced:           ",
+                     self.rawmalloced_total_size, "bytes")
+-        debug_print("|          raw_malloced CUMULATIVE, OURS:           ",
+-                    self.rawmalloced_total_size_cumulative, "bytes")
+         debug_print("| number of major collects:        ",
+                     self.num_major_collects)
+         debug_print("`----------------------------------------------")
