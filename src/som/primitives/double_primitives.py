@@ -124,7 +124,7 @@ class DoublePrimitives(Primitives):
         self._install_instance_primitive(BinaryPrimitive("=", _equals))
         self._install_instance_primitive(BinaryPrimitive("<", _less_than))
         self._install_instance_primitive(BinaryPrimitive("<=", _less_than_or_equal))
-        self._install_instance_primitive(BinaryPrimitive(">", _greater_than))
+        # self._install_instance_primitive(BinaryPrimitive(">", _greater_than))
         self._install_instance_primitive(BinaryPrimitive(">=", _greater_than_or_equal))
         self._install_instance_primitive(BinaryPrimitive("<>", _unequals))
         self._install_instance_primitive(BinaryPrimitive("~=", _unequals))
