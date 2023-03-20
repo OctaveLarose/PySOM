@@ -100,10 +100,10 @@ class ArrayPrimitivesBase(Primitives):
         self._install_instance_primitive(BinaryPrimitive("at:", _at))
         self._install_instance_primitive(TernaryPrimitive("at:put:", _at_put))
         self._install_instance_primitive(UnaryPrimitive("length", _length))
-        self._install_instance_primitive(UnaryPrimitive("copy", _copy))
+        # self._install_instance_primitive(UnaryPrimitive("copy", _copy))
 
         self._install_class_primitive(BinaryPrimitive("new:", _new))
 
-        self._install_instance_primitive(BinaryPrimitive("doIndexes:", _do_indexes))
-        self._install_instance_primitive(BinaryPrimitive("do:", _do))
-        self._install_instance_primitive(BinaryPrimitive("putAll:", _put_all))
+        # self._install_instance_primitive(BinaryPrimitive("doIndexes:", _do_indexes))
+        # self._install_instance_primitive(BinaryPrimitive("do:", _do))
+        # self._install_instance_primitive(BinaryPrimitive("putAll:", _put_all))
