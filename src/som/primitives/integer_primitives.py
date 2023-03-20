@@ -216,23 +216,23 @@ class IntegerPrimitivesBase(Primitives):
         self._install_instance_primitive(BinaryPrimitive("rem:", _remainder))
         self._install_instance_primitive(BinaryPrimitive("&", _and))
 
-        self._install_instance_primitive(BinaryPrimitive("==", _equals_equals))
+        # self._install_instance_primitive(BinaryPrimitive("==", _equals_equals))
 
         self._install_instance_primitive(BinaryPrimitive("=", _equals))
         self._install_instance_primitive(BinaryPrimitive("<", _less_than))
-        self._install_instance_primitive(BinaryPrimitive("<=", _less_than_or_equal))
+        # self._install_instance_primitive(BinaryPrimitive("<=", _less_than_or_equal))
         # self._install_instance_primitive(BinaryPrimitive(">", _greater_than))
-        self._install_instance_primitive(BinaryPrimitive(">=", _greater_than_or_equal))
-        self._install_instance_primitive(BinaryPrimitive("<>", _unequals))
-        self._install_instance_primitive(BinaryPrimitive("~=", _unequals))
+        # self._install_instance_primitive(BinaryPrimitive(">=", _greater_than_or_equal))
+        # self._install_instance_primitive(BinaryPrimitive("<>", _unequals))
+        # self._install_instance_primitive(BinaryPrimitive("~=", _unequals))
 
         self._install_instance_primitive(BinaryPrimitive("<<", _left_shift))
         self._install_instance_primitive(BinaryPrimitive("bitXor:", _bit_xor))
         self._install_instance_primitive(BinaryPrimitive(">>>", _unsigned_right_shift))
-        self._install_instance_primitive(UnaryPrimitive("abs", _abs))
-        self._install_instance_primitive(BinaryPrimitive("max:", _max))
-        self._install_instance_primitive(BinaryPrimitive("min:", _min))
+        # self._install_instance_primitive(UnaryPrimitive("abs", _abs))
+        # self._install_instance_primitive(BinaryPrimitive("max:", _max))
+        # self._install_instance_primitive(BinaryPrimitive("min:", _min))
 
-        self._install_instance_primitive(BinaryPrimitive("to:", _to))
+        # self._install_instance_primitive(BinaryPrimitive("to:", _to))
 
         self._install_class_primitive(BinaryPrimitive("fromString:", _from_string))
