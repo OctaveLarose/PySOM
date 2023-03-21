@@ -163,6 +163,6 @@ def _down_to_do(rcvr, limit, block):
 class IntegerPrimitives(_Base):
     def install_primitives(self):
         _Base.install_primitives(self)
-        self._install_instance_primitive(TernaryPrimitive("to:do:", _to_do))
-        self._install_instance_primitive(TernaryPrimitive("downTo:do:", _down_to_do))
-        self._install_instance_primitive(Primitive("to:by:do:", _to_by_do))
+        # self._install_instance_primitive(TernaryPrimitive("to:do:", _to_do))
+        # self._install_instance_primitive(TernaryPrimitive("downTo:do:", _down_to_do))
+        # self._install_instance_primitive(Primitive("to:by:do:", _to_by_do))
