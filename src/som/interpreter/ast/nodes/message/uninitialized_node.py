@@ -30,21 +30,21 @@ class UninitializedMessageNode(AbstractMessageNode):
         return self._specialize(frame, rcvr, args).execute_evaluated(frame, rcvr, args)
 
     def _specialize(self, _frame, rcvr, args):
-        if args:
-            for specialization in [
-                IntToIntDoNode,
-                IntToDoubleDoNode,
-                IntToIntByDoNode,
-                IntToDoubleByDoNode,
-                IntDownToIntDoNode,
-                IntDownToDoubleDoNode,
-                IfTrueIfFalseNode,
-                IfNode,
-            ]:
-                if specialization.can_specialize(self._selector, rcvr, args, self):
-                    return specialization.specialize_node(
-                        self._selector, rcvr, args, self
-                    )
+        # if args:
+        #     for specialization in [
+            #     IntToIntDoNode,
+            #     IntToDoubleDoNode,
+            #     IntToIntByDoNode,
+            #     IntToDoubleByDoNode,
+            #     IntDownToIntDoNode,
+            #     IntDownToDoubleDoNode,
+            #     IfTrueIfFalseNode,
+            #     IfNode,
+            # ]:
+            #     if specialization.can_specialize(self._selector, rcvr, args, self):
+            #         return specialization.specialize_node(
+            #             self._selector, rcvr, args, self
+            #         )
         num_args = len(args) + 1
         if num_args == 1:
             node = UnarySend(
