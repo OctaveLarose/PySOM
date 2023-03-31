@@ -62,6 +62,6 @@ def _while_true(rcvr, arg):
 
 class BlockPrimitivesBase(Primitives):
     def install_primitives(self):
-        # self._install_instance_primitive(BinaryPrimitive("whileTrue:", _while_true))
-        # self._install_instance_primitive(BinaryPrimitive("whileFalse:", _while_false))
+        self._install_instance_primitive(BinaryPrimitive("whileTrue:", _while_true))
+        self._install_instance_primitive(BinaryPrimitive("whileFalse:", _while_false))
         self._install_instance_primitive(Primitive("restart", _restart))

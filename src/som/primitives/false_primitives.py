@@ -37,15 +37,14 @@ def _if_true_if_false(_rcvr, _true_block, false_block):
 
 class FalsePrimitivesBase(Primitives):
     def install_primitives(self):
-        pass
-        # self._install_instance_primitive(UnaryPrimitive("not", _not))
-        # self._install_instance_primitive(BinaryPrimitive("and:", _and))
-        # self._install_instance_primitive(BinaryPrimitive("&&", _and))
+        self._install_instance_primitive(UnaryPrimitive("not", _not))
+        self._install_instance_primitive(BinaryPrimitive("and:", _and))
+        self._install_instance_primitive(BinaryPrimitive("&&", _and))
 
-        # self._install_instance_primitive(BinaryPrimitive("or:", _or_and_if_false))
-        # self._install_instance_primitive(BinaryPrimitive("||", _or_and_if_false))
-        # self._install_instance_primitive(BinaryPrimitive("ifFalse:", _or_and_if_false))
+        self._install_instance_primitive(BinaryPrimitive("or:", _or_and_if_false))
+        self._install_instance_primitive(BinaryPrimitive("||", _or_and_if_false))
+        self._install_instance_primitive(BinaryPrimitive("ifFalse:", _or_and_if_false))
 
-        # self._install_instance_primitive(
-        #     TernaryPrimitive("ifTrue:ifFalse:", _if_true_if_false)
-        # )
+        self._install_instance_primitive(
+            TernaryPrimitive("ifTrue:ifFalse:", _if_true_if_false)
+        )
