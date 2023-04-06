@@ -55,7 +55,7 @@ build-and-test-interpreters:
 
 build-and-test-jit-bc:
   stage: build-test
-  tags: [yuria2]
+  tags: [yuria]
   script:
     # Setup
     - export PROJECT_FOLDER=$(pwd)
@@ -79,7 +79,7 @@ build-and-test-jit-bc:
 
 build-and-test-jit-ast:
   stage: build-test
-  tags: [yuria3]
+  tags: [yuria]
   script:
     # Setup
     - export PROJECT_FOLDER=$(pwd)
@@ -118,39 +118,39 @@ benchmark-y1:
     # Run Benchmarks
     - rebench --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria
 
-benchmark-y2:
-  stage: benchmark
-  tags: [yuria2]
-  script:
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-ast-jit.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-ast-interp.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-bc-jit.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-bc-interp.lz4
-    
-    - lz4 -d som-ast-jit.lz4    som-ast-jit
-    - lz4 -d som-ast-interp.lz4 som-ast-interp
-    - lz4 -d som-bc-jit.lz4     som-bc-jit
-    - lz4 -d som-bc-interp.lz4  som-bc-interp
-
-    # Run Benchmarks
-    - rebench --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria2
-
-benchmark-y3:
-  stage: benchmark
-  tags: [yuria3]
-  script:
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-ast-jit.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-ast-interp.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-bc-jit.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-bc-interp.lz4
-    
-    - lz4 -d som-ast-jit.lz4    som-ast-jit
-    - lz4 -d som-ast-interp.lz4 som-ast-interp
-    - lz4 -d som-bc-jit.lz4     som-bc-jit
-    - lz4 -d som-bc-interp.lz4  som-bc-interp
-
-    # Run Benchmarks
-    - rebench --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria3
+#benchmark-y2:
+#  stage: benchmark
+#  tags: [yuria2]
+#  script:
+#    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-ast-jit.lz4
+#    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-ast-interp.lz4
+#    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-bc-jit.lz4
+#    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-bc-interp.lz4
+#
+#    - lz4 -d som-ast-jit.lz4    som-ast-jit
+#    - lz4 -d som-ast-interp.lz4 som-ast-interp
+#    - lz4 -d som-bc-jit.lz4     som-bc-jit
+#    - lz4 -d som-bc-interp.lz4  som-bc-interp
+#
+#    # Run Benchmarks
+#    - rebench --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria2
+#
+#benchmark-y3:
+#  stage: benchmark
+#  tags: [yuria3]
+#  script:
+#    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-ast-jit.lz4
+#    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-ast-interp.lz4
+#    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-bc-jit.lz4
+#    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-bc-interp.lz4
+#
+#    - lz4 -d som-ast-jit.lz4    som-ast-jit
+#    - lz4 -d som-ast-interp.lz4 som-ast-interp
+#    - lz4 -d som-bc-jit.lz4     som-bc-jit
+#    - lz4 -d som-bc-interp.lz4  som-bc-interp
+#
+#    # Run Benchmarks
+#    - rebench --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria3
 
 report-completion:
   stage: benchmark-completion
