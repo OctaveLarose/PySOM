@@ -1,3 +1,6 @@
 [submodule "core-lib"]
 	path = core-lib
 	url = https://github.com/SOM-st/SOM.git
+[submodule "are-we-fast-yet"]
+	path = are-we-fast-yet
+	url = https://github.com/OctaveLarose/are-we-fast-yet.git
