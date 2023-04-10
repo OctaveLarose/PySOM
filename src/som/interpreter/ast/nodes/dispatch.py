@@ -72,6 +72,7 @@ class GenericDispatchNode(_AbstractDispatchNode):
         if method is not None:
             return method.invoke_n(stack, stack_ptr)
         from som.interpreter.bc.interpreter import send_does_not_understand
+
         return send_does_not_understand(rcvr, self._selector, stack, stack_ptr)
 
 
