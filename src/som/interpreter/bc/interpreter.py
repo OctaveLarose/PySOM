@@ -359,7 +359,7 @@ def interpret(method, frame, max_stack_size):
             receiver = stack[stack_ptr]
 
             layout = receiver.get_object_layout(current_universe)
-            dispatch_node = _lookup(layout, method, current_bc_idx, current_universe)
+            dispatch_node = _lookup(method, current_bc_idx, current_universe)
 
             if not layout.is_latest:
                 _update_object_and_invalidate_old_caches(
@@ -372,7 +372,7 @@ def interpret(method, frame, max_stack_size):
             receiver = stack[stack_ptr - 1]
 
             layout = receiver.get_object_layout(current_universe)
-            dispatch_node = _lookup(layout, method, current_bc_idx, current_universe)
+            dispatch_node = _lookup(method, current_bc_idx, current_universe)
 
             if not layout.is_latest:
                 _update_object_and_invalidate_old_caches(
@@ -390,7 +390,7 @@ def interpret(method, frame, max_stack_size):
             receiver = stack[stack_ptr - 2]
 
             layout = receiver.get_object_layout(current_universe)
-            dispatch_node = _lookup(layout, method, current_bc_idx, current_universe)
+            dispatch_node = _lookup(method, current_bc_idx, current_universe)
 
             if not layout.is_latest:
                 _update_object_and_invalidate_old_caches(
@@ -413,7 +413,7 @@ def interpret(method, frame, max_stack_size):
             ]
 
             layout = receiver.get_object_layout(current_universe)
-            dispatch_node = _lookup(layout, method, current_bc_idx, current_universe)
+            dispatch_node = _lookup(method, current_bc_idx, current_universe)
 
             if not layout.is_latest:
                 _update_object_and_invalidate_old_caches(
@@ -691,7 +691,7 @@ def get_self(frame, ctx_level):
 
 
 @elidable_promote("all")
-def _lookup(layout, method, bytecode_index, universe):
+def _lookup(method, bytecode_index, universe):
     # cache = first = method.get_inline_cache(bytecode_index)
     # while cache is not None:
     #     if cache.expected_layout is layout:
@@ -713,7 +713,7 @@ def _lookup(layout, method, bytecode_index, universe):
 def _update_object_and_invalidate_old_caches(obj, method, bytecode_index, universe):
     obj.update_layout_to_match_class()
     obj.get_object_layout(universe)
-    method.drop_old_inline_cache_entries(bytecode_index)
+    # method.drop_old_inline_cache_entries(bytecode_index)
 
 
 def send_does_not_understand(receiver, selector, stack, stack_ptr):
