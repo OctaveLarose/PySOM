@@ -303,61 +303,61 @@ class Parser(ParserBase):
             arguments.append(self._formula(mgenc))
 
         keyword = "".join(keyword_parts)
-        source = self._get_source_section(coord)
+        # source = self._get_source_section(coord)
 
-        num_args = len(arguments)
-
-        if not is_super_send:
-            if num_args == 1:
-                if keyword == "ifTrue:":
-                    inlined = self._try_inlining_if(
-                        True, receiver, arguments, source, mgenc
-                    )
-                    if inlined is not None:
-                        return inlined
-                elif keyword == "ifFalse:":
-                    inlined = self._try_inlining_if(
-                        False, receiver, arguments, source, mgenc
-                    )
-                    if inlined is not None:
-                        return inlined
-                elif keyword == "whileTrue:":
-                    inlined = self._try_inlining_while(
-                        True, receiver, arguments, source, mgenc
-                    )
-                    if inlined is not None:
-                        return inlined
-                elif keyword == "whileFalse:":
-                    inlined = self._try_inlining_while(
-                        False, receiver, arguments, source, mgenc
-                    )
-                    if inlined is not None:
-                        return inlined
-                elif keyword == "and:":
-                    inlined = self._try_inlining_and(
-                        receiver, arguments[0], source, mgenc
-                    )
-                    if inlined is not None:
-                        return inlined
-                elif keyword == "or:":
-                    inlined = self._try_inlining_or(
-                        receiver, arguments[0], source, mgenc
-                    )
-                    if inlined is not None:
-                        return inlined
-            elif num_args == 2:
-                if keyword == "ifTrue:ifFalse:":
-                    inlined = self._try_inlining_if_else(
-                        True, receiver, arguments, source, mgenc
-                    )
-                    if inlined is not None:
-                        return inlined
-                elif keyword == "ifFalse:ifTrue:":
-                    inlined = self._try_inlining_if_else(
-                        False, receiver, arguments, source, mgenc
-                    )
-                    if inlined is not None:
-                        return inlined
+        # num_args = len(arguments)
+        #
+        # if not is_super_send:
+        #     if num_args == 1:
+        #         if keyword == "ifTrue:":
+        #             inlined = self._try_inlining_if(
+        #                 True, receiver, arguments, source, mgenc
+        #             )
+        #             if inlined is not None:
+        #                 return inlined
+        #         elif keyword == "ifFalse:":
+        #             inlined = self._try_inlining_if(
+        #                 False, receiver, arguments, source, mgenc
+        #             )
+        #             if inlined is not None:
+        #                 return inlined
+        #         elif keyword == "whileTrue:":
+        #             inlined = self._try_inlining_while(
+        #                 True, receiver, arguments, source, mgenc
+        #             )
+        #             if inlined is not None:
+        #                 return inlined
+        #         elif keyword == "whileFalse:":
+        #             inlined = self._try_inlining_while(
+        #                 False, receiver, arguments, source, mgenc
+        #             )
+        #             if inlined is not None:
+        #                 return inlined
+        #         elif keyword == "and:":
+        #             inlined = self._try_inlining_and(
+        #                 receiver, arguments[0], source, mgenc
+        #             )
+        #             if inlined is not None:
+        #                 return inlined
+        #         elif keyword == "or:":
+        #             inlined = self._try_inlining_or(
+        #                 receiver, arguments[0], source, mgenc
+        #             )
+        #             if inlined is not None:
+        #                 return inlined
+        #     elif num_args == 2:
+        #         if keyword == "ifTrue:ifFalse:":
+        #             inlined = self._try_inlining_if_else(
+        #                 True, receiver, arguments, source, mgenc
+        #             )
+        #             if inlined is not None:
+        #                 return inlined
+        #         elif keyword == "ifFalse:ifTrue:":
+        #             inlined = self._try_inlining_if_else(
+        #                 False, receiver, arguments, source, mgenc
+        #             )
+        #             if inlined is not None:
+        #                 return inlined
 
         selector = symbol_for(keyword)
 
